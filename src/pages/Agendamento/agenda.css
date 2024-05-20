@@ -1,0 +1,56 @@
+
+
+
+
+.highlight {
+  background-color: #ffff00;
+  position: relative;
+  display: inline-block;
+  padding: 0px 3px;
+}
+
+#cliente-box .modal-body {
+  padding: 15px !important;
+}
+
+
+
+  .calendar-times .slots .slot {
+      height: 54px;
+  }
+  .calendar-times .slots .slot:last-child {
+      height: 0px;
+  }
+  /*Tamanho do slot do cabeçalho deve ser o mesmo do slot de hora*/
+  .calendar-body .queue-header {
+      height: 54px;
+  }
+  /*Tamanho do subslot*/
+  .calendar-body .queue .sub-slot {
+      height: 26px;
+      position: relative;
+  }
+
+  .calendar-body .event-container{
+      width: 280px;
+  }
+
+  th,
+td {
+   /* Adiciona borda superior */
+  border-bottom: 1px solid #ddd; /* Adiciona borda inferior */
+  padding: 8px; /* Adiciona algum espaçamento interno */
+  text-align: left; /* Alinha o texto à esquerda */
+}
+
+/* Adiciona borda à direita em todas as células, exceto na última coluna */
+th:not(:last-child),
+td:not(:last-child) {
+  border-right: 1px solid #ddd;
+}
+
+/* Adiciona borda à esquerda em todas as células, exceto na primeira coluna */
+th:not(:first-child),
+td:not(:first-child) {
+  border-left: 1px solid #ddd;
+}
