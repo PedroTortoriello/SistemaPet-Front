@@ -1,13 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../Authentication/scripts/api";
 
-interface CustomSelectSelectProps {
+interface CustomClienteSelectProps {
   label: string;
   onChange: (value: string) => void;
 }
 
-const CustomSelect: React.FC<CustomSelectSelectProps> = ({ label, onChange }) => {
+interface Clientes {
+  cliente: string;
+}
+
+const CustomCliente: React.FC<CustomClienteSelectProps> = ({ label, onChange }) => {
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState('');
+  const [opcoes, setOpcoes] = useState<string[]>([]);
+
+  const fetchClientes = async () => {
+    try {
+      const response = await api.get('/clientes');
+  
+      if (response.status === 200) {
+        console.log('Dados do Cliente recebidos:', response.data);
+        const caixaDataFromAPI: Clientes[] = response.data;
+        const nomesClientes = caixaDataFromAPI.map(cliente => cliente.cliente);
+        setOpcoes(nomesClientes);
+      } else {
+        console.error('Erro ao buscar Cliente');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar Cliente:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClientes();
+  }, []);
 
   const handleFocus = () => {
     setFocused(true);
@@ -24,20 +51,6 @@ const CustomSelect: React.FC<CustomSelectSelectProps> = ({ label, onChange }) =>
     setValue(selectedValue);
     onChange(selectedValue);
   };
-
-  const generateHorarios = () => {
-    const horarios = [];
-    for (let h = 8; h <= 17; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const hora = h < 10 ? `0${h}` : h;
-        const minuto = m === 0 ? '00' : m;
-        horarios.push(`${hora}:${minuto}`);
-      }
-    }
-    return horarios;
-  };
-
-  const opcoes = generateHorarios();
 
   return (
     <div className={`relative mb-4 flex flex-col ${focused ? 'mt-2' : 'mt-4'}`}>
@@ -59,9 +72,10 @@ const CustomSelect: React.FC<CustomSelectSelectProps> = ({ label, onChange }) =>
         {opcoes.map((opcao, index) => (
           <option key={index} value={opcao}>{opcao}</option>
         ))}
+        <option value="Outro">Outro</option>
       </select>
     </div>
   );
 };
 
-export default CustomSelect;
+export default CustomCliente;

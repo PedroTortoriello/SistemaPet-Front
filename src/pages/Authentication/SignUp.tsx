@@ -8,11 +8,19 @@ import api from './scripts/api';
 import Button from './scripts/Button';
 import Title from './scripts/Title';
 import './StyleLogin.css';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
+interface Registro {
+  nome: string;
+  petshop: string;
+  codpet: string;
+  email: string;
+  password: string;
+
+}
 type AuthUserFormData = z.infer<typeof AuthUserFormSchema>;
 
-const SignIn: React.FC = () => {
+const SignUp: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
@@ -29,7 +37,7 @@ const SignIn: React.FC = () => {
 
       if (response.data.authenticate) {
         console.log("Autenticação bem-sucedida!");
-        navigate("/Table/Table", { state: { loggedInEmail: data.email } });
+        //navigate("/Table/Table", { state: { loggedInEmail: data.email } });
       } else {
         setError("Usuário ou senha incorreta!");
       }
@@ -47,6 +55,17 @@ const SignIn: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <Title title="Sistema PET" subtitle="" />
 
+            <div className="input-box ">
+              <label htmlFor="PetShop">PetShop<i>*</i></label>
+              <MdMailOutline id="icon" className="material-icons" />
+              <input
+                className="input"
+                {...register("petshop")}
+                id="petshop"
+                type="petshop"
+                placeholder="Digite o nome do PetShop"
+              />
+            </div>
             <div className="input-box ">
               <label htmlFor="email">Email<i>*</i></label>
               <MdMailOutline id="icon" className="material-icons" />
@@ -78,10 +97,7 @@ const SignIn: React.FC = () => {
               id="button"
               type="submit"
               content={loading ? "Aguarde..." : "Login"}
-              disabled={loading} link={''} target={''} p={''} span={''}            
-            />
-
-            <Link to='/Authentication/SignUp'>Cadastre-se</Link>
+              disabled={loading} link={''} target={''} p={''} span={''}            />
           </form>
         </div>
       </div>
@@ -89,4 +105,4 @@ const SignIn: React.FC = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;

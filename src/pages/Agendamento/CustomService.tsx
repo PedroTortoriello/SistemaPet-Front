@@ -1,11 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
-interface CustomInputProduto {
+interface CustomServiceSelectProps {
   label: string;
   onChange: (value: string) => void;
 }
 
-const InputProduto: React.FC<CustomInputProduto> = ({ label, onChange }) => {
+const CustomService: React.FC<CustomServiceSelectProps> = ({ label, onChange }) => {
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState('');
 
@@ -20,9 +20,14 @@ const InputProduto: React.FC<CustomInputProduto> = ({ label, onChange }) => {
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setValue(event.target.value);
-    onChange(event.target.value);
+    const selectedValue = event.target.value;
+    setValue(selectedValue);
+    onChange(selectedValue);
   };
+
+
+
+  const opcoes = ["Vacina", "Banho e Tosa", "Somente Banho"];
 
   return (
     <div className={`relative mb-4 flex flex-col ${focused ? 'mt-2' : 'mt-4'}`}>
@@ -38,13 +43,15 @@ const InputProduto: React.FC<CustomInputProduto> = ({ label, onChange }) => {
         onFocus={handleFocus}
         onBlur={handleBlur}
         onChange={handleChange}
+        value={value}
       >
-        <option value="">Selecione o Produto</option>
-        <option value="Ração">Ração</option>
-        <option value="Brinquedo">Brinquedo</option>
+        <option value="">Selecione uma Opção</option>
+        {opcoes.map((opcao, index) => (
+          <option key={index} value={opcao}>{opcao}</option>
+        ))}
       </select>
     </div>
   );
 };
 
-export default InputProduto;
+export default CustomService;

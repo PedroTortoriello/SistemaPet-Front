@@ -8,6 +8,8 @@ import RatTable from './pages/Agendamento/table';
 import Estoque from './pages/Estoque/table';
 import Encomendas from './pages/Encomendas/table';
 import Financeiro from './pages/Financeiro/table';
+import Ficha from './pages/Ficha/Table';
+import SignUp from './pages/Authentication/SignUp';
 
 function App() {
   const { pathname } = useLocation();
@@ -38,12 +40,31 @@ function App() {
       />
 
       <Route
+        path="/Authentication/SignUp"
+        element={
+          <>
+          <PageTitle title="Pet System" />
+          <SignUp/>
+          </> 
+        }
+      />
+
+      <Route
         path="/Caixa/Table"
         element={
           <>
           <PageTitle title="Pet System" />
           <Caixa/>
           </> 
+        }
+      />
+      <Route
+        path="/Ficha/Table/:id"
+        element={
+          <>
+            <PageTitle title="Pet System" />
+            <Ficha/>
+          </>
         }
       />
 

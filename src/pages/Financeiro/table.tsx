@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { IoMdAdd, IoMdSend } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
@@ -14,6 +14,19 @@ import CustomDate from './CustomDate';
 import Checkbox from './CustomCheck';
 import CardDataStats from './CardDataStats';
 import { MdOutlineAttachMoney, MdOutlineMoneyOffCsred } from 'react-icons/md';
+import api from '../Authentication/scripts/api';
+import Calendar from '../Estoque/Calendar';
+import CustomCheck from './CustomCheck';
+
+interface Contas {
+    Dia: string;
+    Tipo: string;
+    Valor: string;
+    Produto: string;
+    Quantidade: string;
+    Peso: string;
+}
+
 
 const Financeiro: React.FC = () => {
     const { register, handleSubmit } = useForm();
@@ -23,7 +36,14 @@ const Financeiro: React.FC = () => {
     const [showOtherWeightInput, setShowOtherWeightInput] = useState(false);
     const [focused, setFocused] = useState(false);
     const [value, setValue] = useState('');
+    const [Contas, setContas] = useState<Contas[]>([]);
+    const [ContasData, setContasData] = useState<any[]>([]);
+    const [selectedMonth, setSelectedMonth] = useState(null);
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [showCalendar, setShowCalendar] = useState(false); 
 
+    const toggleCalendar = () => setShowCalendar(!showCalendar);
+    
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setValue(event.target.value);
         setSelectedMarca(event.target.value);
@@ -70,9 +90,105 @@ const Financeiro: React.FC = () => {
         setSelectedMarca(marca);
     };
 
+    const fetchContas = async () => {
+        try {
+          const date = selectedMonth || currentDate;
+          // Para buscar dados do mês, envie apenas o mês e ano
+          const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+          console.log('Data para buscar Contas:', dateString);
+          
+          const response = await api.get('/contas', { params: { data: dateString } });
+      
+          if (response.status === 200) {
+            console.log('Dados do Contas recebidos:', response.data);
+            const ContasDataFromAPI: Contas[] = response.data;
+            setContasData(ContasDataFromAPI);
+          } else {
+            console.error('Erro ao buscar Contas');
+          }
+        } catch (error) {
+          console.error('Erro ao buscar Contas:', error);
+        }
+    };
+      
+      // Call fetchCaixa when selectedMonth or currentDate changes
+    useEffect(() => {
+        fetchContas();
+    }, [currentDate, selectedMonth]);
+
+    const renderContas = () => {
+        const contasDoMes = ContasData.filter((item) => {
+          const itemData = new Date(item.Dia);
+          const selectedDate = selectedMonth || currentDate;
+          const itemYear = itemData.getFullYear();
+          const itemMonth = itemData.getMonth() + 1;
+          const selectedYear = selectedDate.getFullYear();
+          const selectedMonthValue = selectedDate.getMonth() + 1;
+      
+          return itemYear === selectedYear && itemMonth === selectedMonthValue;
+        });
+      
+        if (contasDoMes.length === 0) {
+          return (
+            <tr>
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan="5">
+              </td>
+            </tr>
+          );
+        }
+      
+        return contasDoMes.map((item, index) => {
+          const formattedDate = new Date(item.Dia).toLocaleDateString('pt-BR');
+          const formattedValue = `R$ ${parseFloat(item.Valor).toFixed(2).replace('.', ',')}`;
+          return (
+            <tr key={index}>
+                <td className="p-2 border-t border-b border-gray-300 text-black text-center">{formattedDate}</td>
+                <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Tipo}</td>
+                <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Quantidade}</td>
+                <td className="p-2 border-t border-b border-gray-300 text-black text-center">{formattedValue}</td>
+                <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Peso}</td>
+                <td className="p-2 border-t border-b border-gray-300 text-black text-center"><CustomCheck color="green"/></td>
+            </tr>
+          );
+        });
+    };
+    
+      
+      
+      const onSelectMonth = (date) => {
+        setSelectedMonth(date);
+        toggleCalendar();
+      };
+      
     return (
         <DefaultLayout>
             <Breadcrumb pageName="Contas a Pagar" />
+
+            <div className="mt-20 flex justify-center items-center">
+                <div className="flex items-center">
+                    <div className="relative">
+                    <h2 
+                        className="text-xl font-bold text-black border bg-[#cdab7e] cursor-pointer" 
+                        onClick={toggleCalendar}
+                    >
+                        {selectedMonth ? 
+                        `${selectedMonth.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + selectedMonth.toLocaleString('default', { month: 'long' }).slice(1)} ${selectedMonth.getFullYear()}` 
+                        : 
+                        `${currentDate.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + currentDate.toLocaleString('default', { month: 'long' }).slice(1)} ${currentDate.getFullYear()}`
+                        }
+                    </h2>
+
+                    <div className="absolute left-[-50px] mt-0">
+                        <Calendar
+                        showCalendar={showCalendar}
+                        toggleCalendar={toggleCalendar}
+                        onSelectMonth={onSelectMonth}
+                        currentDate={currentDate}
+                        />
+                    </div>
+                    </div>
+                </div>
+            </div>
 
             <div className="mt-30 w-50 md:flex md:space-x-4">
                 <CardDataStats title="Valor a Pagar" total="R$200,00">
@@ -83,10 +199,10 @@ const Financeiro: React.FC = () => {
                 </CardDataStats>
             </div>
 
-            <div className="mt-10">
-                <div className="w-[900px] p-[15px] border border-black" style={{ border: '1px solid rgba(0, 0, 0, 0.3)', padding: '4px', borderRadius: '4px', direction: 'ltr' }}>
-                    <table className="w-full">
-                        <thead>
+            <div className="mt-15 border rounded-b-md">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-black">
+                        <thead className='bg-[#cdab7e]'>
                             <tr>
                                 <th className="p-2 border-b border-gray-300 text-black text-center">Dia</th>
                                 <th className="p-2 border-b border-gray-300 text-black text-center">Tipo</th>
@@ -96,37 +212,10 @@ const Financeiro: React.FC = () => {
                                 <th className="p-2 border-b border-gray-300 text-black text-center">Pago</th>
                             </tr>
                         </thead>
-                        <tbody className='text-center'>
-                            <tr className="border-t ">
-                                <td className="px-10 py-2 text-black">16/05/2024</td>
-                                <td className="px-10 py-2 text-black">Ração para Cães</td>
-                                <td className="px-10 py-2 text-black">10</td>
-                                <td className="px-10 py-2 text-black">R$500,00</td>
-                                <td className="px-10 py-2 text-black">1 kg</td>
-                                <td className="px-10 py-2 text-black"><Checkbox color="green" /></td>
-                                
-                            </tr>
-                            <tr className="border-t">
-                                <td className="px-10 py-2 text-black">16/05/2024</td>
-                                <td className="px-10 py-2 text-black">Shampoo para Cães</td> 
-                                <td className="px-10 py-2 text-black">20</td>
-                                <td className="px-10 py-2 text-black">R$300</td>
-                                <td className="px-10 py-2 text-black">250 ml</td>
-                                <td className="px-10 py-2 text-black">
-                                    <Checkbox color ="green"/>
-                                </td>
-                            </tr>
-                            <tr className="border-t">
-                                <td className="px-10 py-2 text-black">16/05/2024</td>
-                                <td className="px-10 py-2 text-black">Bola para Cães</td>
-                                <td className="px-10 py-2 text-black">50</td>
-                                <td className="px-10 py-2 text-black">R$200</td>
-                                <td className="px-10 py-2 text-black">Grande</td>
-                                <td className="px-10 py-2 text-black">
-                                    <Checkbox color ="green"/>
-                                </td>               
-                            </tr>
+                        <tbody className='p-2 border-b border-gray-300 text-black text-center'>
+                            {renderContas()}
                         </tbody>
+
                     </table>
                 </div>
             </div>
@@ -154,28 +243,40 @@ const Financeiro: React.FC = () => {
                         <div className="text-black-border-border-black">
                             <div className="flex flex-wrap mt-5">
                                 <div className="w-full pr-4 relative mb-4">
-                                    <CustomDate 
-                                        label="Data da Encomenda"
-                                        register={register('date')}
-                                        id="date"
-                                        placeholder=""
-                                    />
+                                <CustomDate
+                                    label="Dia"
+                                    {...register('Dia')}
+                                    id="Dia"
+                                    placeholder=""
+                                    onChange={(value) => handleChange('Dia', value)}
+                                />
                                 </div>
                             </div>
                             <div className="flex flex-wrap">
                                   <div className="w-full pr-4">
-                                    <CustomSelect label="Tipo" options={["Alimentação", "Higiene e Cuidado", "Brinquedos"]} onChange={handleTipoChange} />
+                                    <CustomSelect 
+                                        label="Tipo" 
+                                        options={["Alimentação", "Higiene e Cuidado", "Brinquedos"]}  
+                                        {...register('Tipo')} 
+                                        onChange={(value) => handleChange('Tipo', value)}
+                                     />
                                 </div>
                                 {selectedType === 'Alimentação' && (
                                     <div className="w-full pr-4">
-                                        <CustomAlim label="Marca de Alimentação" onChange={handleMarcaChange} />
+                                        <CustomAlim label="Marca de Alimentação" onChange={(value) => handleChange('Marca', value)} />
                                         <CustomPeso label="Peso" onChange={handlePesoChange} />
                                     </div>
                                 )}
 
                                 {showOtherWeightInput && (
                                     <div className="w-full pr-4">
-                                        <CustomInput label="Peso" register={register('peso')} id="peso" placeholder="Digite o peso" />
+                                        <CustomInput                     
+                                            label="Peso"
+                                            {...register('Peso')} // Certifique-se de que 'Peso' corresponde ao esperado pelo backend
+                                            id="Peso"
+                                            placeholder=""
+                                            onChange={(value) => handleChange('Peso', value)}
+                                        />
                                     </div>
                                 )}
                                 {selectedType === 'Higiene e Cuidado' && (

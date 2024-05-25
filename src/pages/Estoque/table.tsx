@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { IoMdAdd, IoMdSend } from "react-icons/io";
+import { IoMdAdd, IoMdArrowBack, IoMdArrowForward, IoMdSend } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { useForm } from 'react-hook-form';
@@ -11,6 +11,16 @@ import CustomAlim from './CustomEstoque';
 import CustomCuidado from './CustomProducts2';
 import CustomBrinquedos from './CustomProducts3';
 import CustomDate from './CustomDate';
+import api from '../Authentication/scripts/api';
+import Calendar from './Calendar';
+
+interface Estoque {
+    Dia: string;
+    Valor: string;
+    Produto: string;
+    Quantidade: string;
+    Peso: string;
+}
 
 const Estoque: React.FC = () => {
     const { register, handleSubmit } = useForm();
@@ -20,7 +30,14 @@ const Estoque: React.FC = () => {
     const [showOtherWeightInput, setShowOtherWeightInput] = useState(false);
     const [focused, setFocused] = useState(false);
     const [value, setValue] = useState('');
+    const [estoque, setEstoque] = useState<Estoque[]>([]);
+    const [EstoqueData, setEstoqueData] = useState<any[]>([]);
+    const [selectedMonth, setSelectedMonth] = useState(null);
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [showCalendar, setShowCalendar] = useState(false); 
 
+    const toggleCalendar = () => setShowCalendar(!showCalendar);
+    
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setValue(event.target.value);
         setSelectedMarca(event.target.value);
@@ -67,14 +84,110 @@ const Estoque: React.FC = () => {
         setSelectedMarca(marca);
     };
 
+    const fetchCaixa = async () => {
+        try {
+          const date = selectedMonth || currentDate;
+          // Para buscar dados do mês, envie apenas o mês e ano
+          const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+          console.log('Data para buscar Caixa:', dateString);
+          
+          const response = await api.get('/estoque', { params: { data: dateString } });
+      
+          if (response.status === 200) {
+            console.log('Dados do caixa recebidos:', response.data);
+            const caixaDataFromAPI: Estoque[] = response.data;
+            setEstoqueData(caixaDataFromAPI);
+          } else {
+            console.error('Erro ao buscar Caixa');
+          }
+        } catch (error) {
+          console.error('Erro ao buscar Caixa:', error);
+        }
+    };
+      
+      // Call fetchCaixa when selectedMonth or currentDate changes
+    useEffect(() => {
+        fetchCaixa();
+    }, [currentDate, selectedMonth]);
+      
+
+    const renderEstoque = () => {
+        const caixaDoMes = EstoqueData.filter((item) => {
+          const itemData = new Date(item.Dia);
+          const selectedDate = selectedMonth || currentDate;
+          const itemYear = itemData.getFullYear();
+          const itemMonth = itemData.getMonth() + 1;
+          const selectedYear = selectedDate.getFullYear();
+          const selectedMonthValue = selectedDate.getMonth() + 1;
+      
+          return itemYear === selectedYear && itemMonth === selectedMonthValue;
+        });
+      
+        if (caixaDoMes.length === 0) {
+          return (
+            <tr>
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan="5">
+              </td>
+            </tr>
+          );
+        }
+      
+        return caixaDoMes.map((item, index) => {
+          const formattedDate = new Date(item.Dia).toLocaleDateString('pt-BR');
+          const formattedValue = `R$ ${parseFloat(item.Valor).toFixed(2).replace('.', ',')}`;
+          return (
+            <tr key={index}>
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center">{formattedDate}</td>
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center">{formattedValue}</td>
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Produto}</td>
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Quantidade}</td>
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Peso}</td>
+            </tr>
+          );
+        });
+    };
+    
+      
+      
+      const onSelectMonth = (date) => {
+        setSelectedMonth(date);
+        toggleCalendar();
+      };
+
     return (
         <DefaultLayout>
             <Breadcrumb pageName="Estoque" />
 
-            <div className="mt-30 border rounded-b-md">
+            <div className="mt-20 flex justify-center items-center">
+                <div className="flex items-center">
+                    <div className="relative">
+                    <h2 
+                        className="text-xl font-bold text-black border bg-[#cdab7e] cursor-pointer" 
+                        onClick={toggleCalendar}
+                    >
+                        {selectedMonth ? 
+                        `${selectedMonth.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + selectedMonth.toLocaleString('default', { month: 'long' }).slice(1)} ${selectedMonth.getFullYear()}` 
+                        : 
+                        `${currentDate.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + currentDate.toLocaleString('default', { month: 'long' }).slice(1)} ${currentDate.getFullYear()}`
+                        }
+                    </h2>
+
+                    <div className="absolute left-[-50px] mt-0">
+                        <Calendar
+                        showCalendar={showCalendar}
+                        toggleCalendar={toggleCalendar}
+                        onSelectMonth={onSelectMonth}
+                        currentDate={currentDate}
+                        />
+                    </div>
+                    </div>
+                </div>
+            </div>
+        
+            <div className="mt-15 border rounded-b-md">
                 <div className="overflow-x-auto">
                     <table className="w-full text-black">
-                        <thead>
+                        <thead className='bg-[#cdab7e]'>
                             <tr>
                                 <th className="px-4 py-2">Dia</th>
                                 <th className="px-4 py-2">Valor da Unidade</th>
@@ -83,28 +196,8 @@ const Estoque: React.FC = () => {
                                 <th className="px-4 py-2">Peso</th>
                             </tr>
                         </thead>
-                        <tbody className='text-center'>
-                            <tr className="border-t">
-                                <td className="px-10 py-2">16/05/2024</td>
-                                <td className="px-10 py-2">R$ 10,00</td>
-                                <td className="px-10 py-2">Ração para Cães</td>
-                                <td className="px-10 py-2">10</td>
-                                <td className="px-10 py-2">1 kg</td>
-                            </tr>
-                            <tr className="border-t">
-                                <td className="px-10 py-2">16/05/2024</td>
-                                <td className="px-10 py-2">R$ 15,00</td>
-                                <td className="px-10 py-2">Shampoo para Cães</td>
-                                <td className="px-10 py-2">12</td>
-                                <td className="px-10 py-2">250 ml</td>
-                            </tr>
-                            <tr className="border-t">
-                                <td className="px-10 py-2">16/05/2024</td>
-                                <td className="px-10 py-2">R$ 20,00</td>
-                                <td className="px-10 py-2">Brinquedos</td>
-                                <td className="px-10 py-2">15</td>
-                                <td className="px-10 py-2"></td>
-                            </tr>
+                        <tbody className='p-2 border-b border-gray-300 text-black text-center'>
+                            {renderEstoque()}
                         </tbody>
 
                     </table>

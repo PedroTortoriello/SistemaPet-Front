@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { IoMdAdd, IoMdSend } from "react-icons/io";
+import { IoMdAdd, IoMdArrowBack, IoMdArrowForward, IoMdSend } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { useForm } from 'react-hook-form';
@@ -12,6 +12,16 @@ import CustomCuidado from './CustomProducts2';
 import CustomBrinquedos from './CustomProducts3';
 import CustomDate from './CustomDate';
 import Checkbox from './CustomCheck';
+import Calendar from './Calendar';
+import api from '../Authentication/scripts/api';
+import CustomCheck from './CustomCheck';
+
+interface Encomenda {
+    Data: string;
+    Produto: string;
+    Quantidade: string;
+    Peso: string;
+}
 
 const Encomendas: React.FC = () => {
     const { register, handleSubmit } = useForm();
@@ -21,6 +31,10 @@ const Encomendas: React.FC = () => {
     const [showOtherWeightInput, setShowOtherWeightInput] = useState(false);
     const [focused, setFocused] = useState(false);
     const [value, setValue] = useState('');
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [showCalendar, setShowCalendar] = useState(false); 
+    const [selectedMonth, setSelectedMonth] = useState(null);
+    const [EncomendaData, setEncomendaData] = useState<any[]>([]);
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setValue(event.target.value);
@@ -68,14 +82,114 @@ const Encomendas: React.FC = () => {
         setSelectedMarca(marca);
     };
 
+
+
+    const toggleCalendar = () => setShowCalendar(!showCalendar);
+
+    const fetchEncomenda = async () => {
+        try {
+            const date = selectedMonth || currentDate;
+            const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            console.log('Data para buscar Encomenda:', dateString);
+            
+            const response = await api.get('/encomendas', { params: { data: dateString } });
+    
+            if (response.status === 200) {
+                console.log('Dados do Encomenda recebidos:', response.data);
+                const EncomendaDataFromAPI: Encomenda[] = response.data;
+                setEncomendaData(EncomendaDataFromAPI);
+            } else {
+                console.error('Erro ao buscar Encomenda');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar Encomenda:', error);
+        }
+    };
+      
+      // Call fetchCaixa when selectedMonth or currentDate changes
+    useEffect(() => {
+        fetchEncomenda();
+    }, [currentDate, selectedMonth]);
+      
+
+    const renderEncomenda = () => {
+        const EncomendasDoMes = EncomendaData.filter((item) => {
+            const itemData = new Date(item.Data);  // Use "Data" aqui, de acordo com o formato do JSON recebido
+            const selectedDate = selectedMonth || currentDate;
+            const itemYear = itemData.getFullYear();
+            const itemMonth = itemData.getMonth() + 1;
+            const selectedYear = selectedDate.getFullYear();
+            const selectedMonthValue = selectedDate.getMonth() + 1;
+    
+            return itemYear === selectedYear && itemMonth === selectedMonthValue;
+        });
+    
+        if (EncomendasDoMes.length === 0) {
+            return (
+                <tr>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan="5">
+        
+                    </td>
+                </tr>
+            );
+        }
+    
+        return EncomendasDoMes.map((item, index) => {
+            const formattedDate = new Date(item.Data).toLocaleDateString('pt-BR');
+      
+            return (
+                <tr key={index}>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center">{formattedDate}</td>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Produto}</td>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Quantidade}</td>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Peso}</td>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center"><CustomCheck color="green"/></td>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center"><CustomCheck color="red"/></td>
+                </tr>
+            );
+        });
+    };
+    
+    
+           
+      const onSelectMonth = (date) => {
+        setSelectedMonth(date);
+        toggleCalendar();
+      };
+
     return (
         <DefaultLayout>
             <Breadcrumb pageName="Encomendas" />
+            <div className="mt-20 flex justify-center items-center">
+                <div className="flex items-center">
+                    <div className="relative">
+                    <h2 
+                        className="text-xl font-bold text-black border bg-[#cdab7e] cursor-pointer" 
+                        onClick={toggleCalendar}
+                    >
+                        {selectedMonth ? 
+                        `${selectedMonth.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + selectedMonth.toLocaleString('default', { month: 'long' }).slice(1)} ${selectedMonth.getFullYear()}` 
+                        : 
+                        `${currentDate.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + currentDate.toLocaleString('default', { month: 'long' }).slice(1)} ${currentDate.getFullYear()}`
+                        }
+                    </h2>
 
-            <div className="mt-30 border rounded-b-md">
+                    <div className="absolute left-[-50px] mt-0">
+                        <Calendar
+                        showCalendar={showCalendar}
+                        toggleCalendar={toggleCalendar}
+                        onSelectMonth={onSelectMonth}
+                        currentDate={currentDate}
+                        />
+                    </div>
+                </div>
+            </div>
+
+      </div>
+            <div className="mt-15 border rounded-b-md">
                 <div className="overflow-x-auto">
                     <table className="w-full text-black">
-                        <thead>
+                        <thead className='bg-[#cdab7e]'>
                             <tr>
                                 <th className="px-4 py-2">Dia</th>
                                 <th className="px-4 py-2">Produto</th>
@@ -85,37 +199,8 @@ const Encomendas: React.FC = () => {
                                 <th className="px-4 py-2">Faltou</th>
                             </tr>
                         </thead>
-                        <tbody className='text-center'>
-                            <tr className="border-t">
-                                <td className="px-10 py-2">16/05/2024</td>
-                                <td className="px-10 py-2">Ração para Cães</td>
-                                <td className="px-10 py-2">10</td>
-                                <td className="px-10 py-2">1 kg</td>
-                                <td className="px-10 py-2"><Checkbox color="green" /></td>
-                                <td className="px-10 py-2"><Checkbox color="red" /></td>
-                            </tr>
-                            <tr className="border-t">
-                                <td className="px-10 py-2">16/05/2024</td>
-                                <td className="px-10 py-2">Shampoo para Cães</td>
-                                <td className="px-10 py-2">30</td>
-                                <td className="px-10 py-2">250 ml</td>
-                                <td className="px-10 py-2">
-                                    <Checkbox color ="green"/>
-                                </td>
-                                <td className="px-10 py-2">
-                                    <Checkbox color="red" />
-                                </td>
-                            </tr>
-                            <tr className="border-t">
-                                <td className="px-10 py-2">16/05/2024</td>
-                                <td className="px-10 py-2">Bola para Cães</td>
-                                <td className="px-10 py-2">50</td>
-                                <td className="px-10 py-2">Grande</td>
-                                <td className="px-10 py-2">
-                                <Checkbox color ="green"/>
-                                </td>
-                                <td className="px-10 py-2"><Checkbox color ="red"/></td>
-                            </tr>
+                        <tbody className='p-2 border-b border-gray-300 text-black text-center'>
+                            {renderEncomenda()}
                         </tbody>
 
                     </table>

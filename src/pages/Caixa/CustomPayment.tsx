@@ -40,9 +40,9 @@ const CustomPayment: React.FC<CustomPaymentSelectProps> = ({ label, onChange }) 
         onChange={handleChange}
       >
         <option value="">Selecione a forma de pagamento</option>
-        <option value="dinheiro">Dinheiro</option>
-        <option value="cartao_credito">Cartão de Crédito</option>
-        <option value="cartao_debito">Cartão de Débito</option>
+        <option value="Dinheiro">Dinheiro</option>
+        <option value="Crédito">Cartão de Crédito</option>
+        <option value="Débito">Cartão de Débito</option>
       </select>
     </div>
   );

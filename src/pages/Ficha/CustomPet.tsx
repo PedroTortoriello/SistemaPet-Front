@@ -1,29 +1,35 @@
-import React, { useState, forwardRef, ForwardedRef } from 'react';
+import React, { useState, forwardRef, ChangeEvent } from "react";
 
-interface CustomDateProps {
+interface CustomPetProps {
   label: string;
   id: string;
-  placeholder?: string;
-  onChange: (value: string) => void;
+  placeholder: string;
+  prefix?: string;
+  onChange?: (value: string) => void; // Adicionando a propriedade onChange opcional
 }
 
-const CustomDate = forwardRef((props: CustomDateProps, ref: ForwardedRef<HTMLInputElement>) => {
-  const { label, id, placeholder, onChange } = props;
+const CustomPet: React.ForwardRefRenderFunction<HTMLInputElement, CustomPetProps> = (
+  { label, id, placeholder, prefix, onChange }, // Adicionando onChange à lista de props
+  ref
+) => {
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState('');
 
   const handleFocus = () => setFocused(true);
+
   const handleBlur = () => {
-    if (!value) {
-      setFocused(false);
+    if (!value) setFocused(false);
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    setValue(newValue);
+    if (onChange) { // Verificando se onChange é definido antes de chamá-lo
+      onChange(newValue);
     }
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    setValue(newValue);
-    onChange(newValue);
-  };
+  const displayedValue = prefix ? `${prefix} ${value}` : value;
 
   return (
     <div className={`relative mb-4 flex flex-col ${focused || value ? 'mt-2' : 'mt-4'}`}>
@@ -35,17 +41,17 @@ const CustomDate = forwardRef((props: CustomDateProps, ref: ForwardedRef<HTMLInp
       </label>
       <input 
         ref={ref}
-        type="date"
+        type="text"
         id={id}
         className="h-12 rounded-md border border-black px-2 py-1 text-black focus:border-black-2 focus:outline-none"
         onFocus={handleFocus}
         onBlur={handleBlur}
         onChange={handleChange}
-        value={value}
+        value={displayedValue}
         placeholder={placeholder}
       />
     </div>
   );
-});
+};
 
-export default CustomDate;
+export default forwardRef(CustomPet);
