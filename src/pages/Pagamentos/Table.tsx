@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import {MdOutlinePassword} from "react-icons/md";
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from '../Authentication/scripts/api';
+
 import Button from '../Authentication/scripts/Button';
 import Title from '../Authentication/scripts/Title';
 import './StylePag.css';
 import { useNavigate } from 'react-router-dom';
 import * as z from "zod";
-import { MdOutlinePayment,  } from "react-icons/md";
 import { CiCalendarDate, CiCreditCard1 } from "react-icons/ci";
-import { FaRegCreditCard } from 'react-icons/fa';
+
 import { IoLogoUsd, IoPersonOutline } from 'react-icons/io5';
 
 interface AuthUserFormData {
@@ -22,11 +21,11 @@ interface AuthUserFormData {
 }
 
 const Pagamento: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [loading, ] = useState(false);
+  const [error, ] = useState<string>("");
   const navigate = useNavigate();
   const [cardNumber, setCardNumber] = useState("");
-  const [cardType] = useState("");
+
 
   const schema = z.object({
     cardNumber: z.string().min(16, "Número do cartão inválido").max(16, "Número do cartão inválido"),
@@ -83,7 +82,7 @@ const Pagamento: React.FC = () => {
     }
   };
   
-  const CardCVV = (CardCVV: string, expirationDate: string) => {
+  const CardCVV = (CardCVV: string) => {
     // Remove tudo que não é número
     CardCVV = CardCVV.replace(/\D/g, '');
   
