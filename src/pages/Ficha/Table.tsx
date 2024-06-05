@@ -6,7 +6,6 @@ import api from '../Authentication/scripts/api';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { IoMdAdd, IoMdSend } from 'react-icons/io';
 import { IoCloseSharp } from 'react-icons/io5';
-import CustomPet from './CustomPet';
 
 interface Cliente {
   id: number;
@@ -78,9 +77,6 @@ const Ficha: React.FC = () => {
     fetchData();
   }, [id, setValue]);
 
-  const handleChange = (name: keyof Pet, value: string) => {
-    setValue(name, value);
-  };
 
   const onSubmit: SubmitHandler<Pet> = async (data) => {
     try {
