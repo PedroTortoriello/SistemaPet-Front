@@ -1,5 +1,72 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400&display=swap');
 
+.visa {
+    width: 20px; /* Ajuste conforme necessário */
+    height: 15px; /* Ajuste conforme necessário */
+    background-image: url('./visa.jpg');
+    background-repeat: no-repeat;
+    background-position: right 1px center; /* Ajuste conforme necessário */
+    background-size: contain; /* ou 'cover', dependendo do comportamento desejado */
+}
+
+.mastercard  {
+    width: 10px; /* Ajuste conforme necessário */
+    height: 15px; /* Ajuste conforme necessário */
+    background-image: url('./mastercard.png');
+    background-repeat: no-repeat;
+    background-position: right 1px center; /* Ajuste conforme necessário */
+    background-size: contain; /* ou 'cover', dependendo do comportamento desejado */
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(120deg, #1d976c, #2c3e50);
+  }
+
+.input {
+    font-family: "Space Mono", monospace;
+    border: none;
+    font-size: 16px;
+    height: 26px;
+    margin-top: 10px;
+    background: 0;
+    padding: 0;
+    width: 0;
+    border-bottom: 1px solid white;
+    
+}
+
+.label {
+    color: white;
+    font-size: 12px;
+    font-weight: normal;
+    font-family: "Space Mono", monospace;
+    pointer-events: none;
+    display: block;
+    padding-bottom: 2px;
+  }
+
+.card {
+    display: flex;
+    flex-direction: column;
+   
+    height: 280px;
+    width: 420px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(35px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 80px rgba(0, 0, 0, 0.25);
+    padding: 10px 27px 27px 27px;
+    overflow: hidden;
+}
+
+.card-type{
+    width: 10px;
+    height: 5px;
+}
+
 .login-page {
     * {
         margin: 0;
@@ -20,16 +87,10 @@
 
 .login-page .material-icons{
     position: absolute;
-    margin-top: 1.3em;
+    margin-top: 1.4em;
     margin-left: 0.3em;
     display: block;
 
-}
-.eye{
-    margin-left: 90%;
-    cursor: pointer;
-    display: inline-block;
-    position: absolute;
 }
 
 .fa-solid{
@@ -89,7 +150,7 @@
     align-items: center;
     flex-direction: column;
     width: 33vw;
-    height: 65vh;
+    height: 93vh;
     border-radius: 5px;
 }
 

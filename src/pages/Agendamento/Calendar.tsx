@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 
-const Calendar = ({ showCalendar, toggleCalendar, onSelectDay, currentDate }) => {
+interface CalendarProps {
+  showCalendar: boolean;
+  toggleCalendar: () => void;
+  onSelectDay: (date: Date) => void;
+  currentDate: Date;
+}
+
+const Calendar: React.FC<CalendarProps> = ({ showCalendar, toggleCalendar, onSelectDay, currentDate }) => {
   const [months] = useState([
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
@@ -8,12 +15,12 @@ const Calendar = ({ showCalendar, toggleCalendar, onSelectDay, currentDate }) =>
 
   const [daysOfWeek] = useState(['Do', 'Se', 'Te', 'Qu', 'Qu', 'Se', 'Sa']);
 
-  const [selectedDay, setSelectedDay] = useState(currentDate); // Definindo selectedDay com o currentDate
+  const [selectedDay, setSelectedDay] = useState(currentDate);
 
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth());
 
-  const getDaysOfMonth = (year, month) => {
+  const getDaysOfMonth = (year: number, month: number) => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDayOfWeek = new Date(year, month, 1).getDay();
     const days = [];
@@ -50,16 +57,22 @@ const Calendar = ({ showCalendar, toggleCalendar, onSelectDay, currentDate }) =>
     }
   };
 
-  const handleDayClick = (day) => {
+  const handleDayClick = (day: Date) => {
     console.log('Dia selecionado:', day);
-    
     setSelectedDay(day);
-    onSelectDay(day); 
-    toggleCalendar(); 
+    onSelectDay(day);
+    toggleCalendar();
   };
-  
-  
+
   const daysOfMonth = getDaysOfMonth(currentYear, currentMonth);
+
+  const isSameDay = (date1: Date, date2: Date) => {
+    return (
+      date1.getDate() === date2.getDate() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getFullYear() === date2.getFullYear()
+    );
+  };
 
   return (
     <div className="relative">
@@ -73,7 +86,7 @@ const Calendar = ({ showCalendar, toggleCalendar, onSelectDay, currentDate }) =>
           <table className="table-auto">
             <thead>
               <tr>
-                {daysOfWeek.map((day, index) => ( 
+                {daysOfWeek.map((day, index) => (
                   <th key={index} className="p-1 text-black" style={{fontSize: '12px', lineHeight: '1'}}>{day}</th>
                 ))}
               </tr>
@@ -83,13 +96,14 @@ const Calendar = ({ showCalendar, toggleCalendar, onSelectDay, currentDate }) =>
                 <tr key={weekIndex}>
                   {[...Array(7)].map((_, dayIndex) => {
                     const dayObject = daysOfMonth[weekIndex * 7 + dayIndex];
+                    const dayDate = new Date(currentYear, currentMonth, dayObject?.day);
                     return (
-                        <td 
-                          key={dayIndex} 
-                          className={`p-2 cursor-pointer text-center ${dayObject?.previousMonth ? 'text-gray-400' : 'text-black'} ${selectedDay === dayObject?.day ? 'bg-[#cdab7e] font-bold' : ''}`} 
-                          onClick={() => handleDayClick(new Date(currentYear, currentMonth, dayObject?.day))}
-                          style={{fontSize: '12px', lineHeight: '1'}}
-                        >
+                      <td
+                        key={dayIndex}
+                        className={`p-2 cursor-pointer text-center ${dayObject?.previousMonth ? 'text-gray-400' : 'text-black'} ${isSameDay(selectedDay, dayDate) ? 'bg-[#cdab7e] font-bold' : ''}`}
+                        onClick={() => handleDayClick(dayDate)}
+                        style={{fontSize: '12px', lineHeight: '1'}}
+                      >
                         {dayObject?.day}
                       </td>
                     );

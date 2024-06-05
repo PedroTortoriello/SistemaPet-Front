@@ -5,7 +5,6 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import api from '../Authentication/scripts/api';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { IoMdAdd, IoMdSend } from 'react-icons/io';
-import CustomInput from './CustomInput';
 import { IoCloseSharp } from 'react-icons/io5';
 import CustomPet from './CustomPet';
 
@@ -28,10 +27,9 @@ interface Compra {
 }
 
 interface Pet {
-  id: number;
   nomeCliente: string;
+  id: number;
   nomePet: string;
-  especie: string;
   raca: string;
   idade: number;
 }
@@ -39,8 +37,8 @@ interface Pet {
 const Ficha: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [pets, setPets] = useState<Pet[]>([]);
   const [compras, setCompras] = useState<Compra[]>([]);
+  const [pets, setPets] = useState<Pet[]>([]);
   const [showCadastro, setShowCadastro] = useState(false);
   const { register, handleSubmit, setValue, reset } = useForm<Pet>();
 
@@ -50,16 +48,27 @@ const Ficha: React.FC = () => {
         const [clienteResponse, comprasResponse, petsResponse] = await Promise.all([
           api.get(`/clientes/${id}`),
           api.get(`/clientes/${id}/compras`),
-          api.get(`/clientes/${id}/pets`)
+          api.get(`/clientes/${id}/pets`),
+          
         ]);
 
-        if (clienteResponse.status === 200 && comprasResponse.status === 200 && petsResponse.status === 200) {
+        if (clienteResponse.status === 200) {
           setCliente(clienteResponse.data);
-          setCompras(comprasResponse.data);
-          setPets(petsResponse.data);
-          setValue('nomeCliente', clienteResponse.data.nomeCliente); // Setar o nome do cliente
+          setValue('nomePet', ''); // Resetar o campo nomePet do formulário
         } else {
           console.error('Erro ao buscar dados do cliente');
+        }
+
+        if (comprasResponse.status === 200) {
+          setCompras(comprasResponse.data);
+        } else {
+          console.error('Erro ao buscar compras do cliente');
+        }
+
+        if (petsResponse.status === 200) {
+          setPets(petsResponse.data);
+        } else {
+          console.error('Erro ao buscar pets do cliente');
         }
       } catch (error) {
         console.error('Erro ao buscar dados do cliente:', error);
@@ -75,7 +84,12 @@ const Ficha: React.FC = () => {
 
   const onSubmit: SubmitHandler<Pet> = async (data) => {
     try {
-      const postResponse = await api.post(`/clientes/${data.nomeCliente}/pets`, data);
+      console.log('Dados do formulário:', data);
+  
+      // Adicione o ID do cliente aos dados do pet
+      const petData = { ...data, clienteId: cliente?.id };
+  
+      const postResponse = await api.post(`/clientes/${id}/pets`, petData);
   
       if (postResponse.status === 200) {
         console.log('Pet adicionado com sucesso');
@@ -88,28 +102,9 @@ const Ficha: React.FC = () => {
       console.error('Erro ao enviar dados:', error);
     }
   };
+  
 
-  function formatarCPF(cpf: string): string {
-    // Remover caracteres indesejados
-    cpf = cpf.replace(/\D/g, '');
-  
-    // Adicionar os pontos e o traço no CPF
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-  
-  function formatarRG(rg: string): string {
-    // Ajustar o formato do RG conforme necessário
-    // Por exemplo, para um RG no formato 00.000.000-0, você poderia fazer algo como:
-    return rg.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})$/, '$1.$2.$3-$4');
-  }
-
-  function formatarTelefone(telefone: string): string {
-    // Remover caracteres indesejados
-    telefone = telefone.replace(/\D/g, '');
-  
-    // Adicionar parênteses e o hífen no telefone
-    return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-  }
+  // Funções de formatação omitidas para brevidade
 
   const fecharDiv = () => {
     setShowCadastro(false);
@@ -127,10 +122,31 @@ const Ficha: React.FC = () => {
     return `${day}/${month}/${year}`;
   };
 
+  function formatarCPF(cpf: string): string {
+    // Remover caracteres indesejados
+    cpf = cpf.replace(/\D/g, '');
+
+    // Adicionar os pontos e o traço no CPF
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+
+  function formatarRG(rg: string): string {
+    // Ajustar o formato do RG conforme necessário
+    // Por exemplo, para um RG no formato 00.000.000-0, você poderia fazer algo como:
+    return rg.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})$/, '$1.$2.$3-$4');
+  }
+
+  function formatarTelefone(telefone: string): string {
+    // Remover caracteres indesejados
+    telefone = telefone.replace(/\D/g, '');
+
+    // Adicionar parênteses e o hífen no telefone
+    return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  }
+
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Perfil do Cliente" />
-
 
       <div className="scrollable-content overflow-y-auto">
         <div className="mx-auto mt-10 p-6 rounded shadow-md bg-white">
@@ -138,7 +154,7 @@ const Ficha: React.FC = () => {
           <div className="grid grid-cols-2 gap-x-8">
             <div>
               <p className="font-bold text-black">Nome Completo:</p>
-              <p >{cliente?.nomeCliente}</p>
+              <p>{cliente?.nomeCliente}</p>
             </div>
             <div>
               <p className="font-bold text-black">CPF:</p>
@@ -151,17 +167,19 @@ const Ficha: React.FC = () => {
             <div>
               <p className="font-bold text-black">Endereço:</p>
               <p>{cliente?.Endereço}</p>
-              </div>
-              <div>
-                <p className="font-bold text-black">Telefone:</p>
-                <p>{formatarTelefone(cliente?.telefone || '')}</p>
-              </div>
-              <div>
-                <p className="font-bold text-black">Email:</p>
-                <p>{cliente?.email}</p>
-              </div>
+            </div>
+            <div>
+              <p className="font-bold text-black">Telefone:</p>
+              <p>{formatarTelefone(cliente?.telefone || '')}</p>
+            </div>
+            <div>
+              <p className="font-bold text-black">Email:</p>
+              <p>{cliente?.email}</p>
             </div>
           </div>
+        </div>
+
+
         </div>
 
         <div className="mx-auto mt-6 p-6 rounded shadow-md bg-white">
@@ -187,91 +205,96 @@ const Ficha: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>        
+          </div>
         </div>
 
         <div className="mx-auto mt-6 p-6 rounded shadow-md bg-white">
           <h1 className="text-3xl font-semibold mb-4 text-black">Pets</h1>
-          <div className="grid grid-cols-3 gap-4">
-            {pets.map((pet) => (
-              <div key={pet.id} className="p-4 border rounded-md w-75">
-                <p className="font-bold text-black">Nome: </p>
-                <p>{pet.nomePet}</p>
-                <p className="font-bold text-black">Raça: </p>
-                <p>{pet.raca}</p>
-                <p className="font-bold text-black">Idade: </p>
-                <p>{pet.idade}</p>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className='bg-[#cdab7e]'>
+                <tr>
+                  <th className="py-2 px-4 border-b text-black">Nome</th>
+                  <th className="py-2 px-4 border-b text-black">Raça</th>
+                  <th className="py-2 px-4 border-b text-black">Idade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pets.map((pet) => (
+                  <tr key={pet.id}>
+                    <td className="py-2 px-4 border-b text-black text-center">{pet.nomePet}</td>
+                    <td className="py-2 px-4 border-b text-black text-center">{pet.raca}</td>
+                    <td className="py-2 px-4 border-b text-black text-center">{pet.idade}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <button
-            type="button"
-            onClick={handleNovoPet}
-            className="mt-5 flex w-40 font-bold items-center justify-center rounded-md bg-[#cdab7e] py-2 pr-4 text-center font-medium text-black transition hover:bg-[#d5b99a]"
-          >
-            <span className="font-bold">Novo Pet</span>
-            <IoMdAdd className="ml-1" />
-          </button>
-        </div>
+          <div className="mt-4">
+            <button
+              onClick={handleNovoPet}
+              className="bg-[#cdab7e] text-white py-2 px-4 rounded flex items-center"
+            >
+              <IoMdAdd className="mr-2" /> Novo Pet
+            </button>
+          </div>
 
-        {showCadastro && (
-          <div className="fixed top-0 right-0 h-full overflow-y-auto bg-white w-[400px] shadow-lg">
-            <div className="border h-20 border-black bg-[#cccccc] relative">
-              <h1 className="text-center w-full text-[20px] font-bold text-zinc-700 mt-7">Adicionar Novo Pet</h1>
-              <span className="absolute top-0 right-0 mr-2 mt-2 cursor-pointer text-black font-bold h-30" onClick={fecharDiv}>
-                <IoCloseSharp />
-              </span>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="mx-auto p-8 rounded-lg mt-10">
-              <div className="flex justify-center items-center">
-                <hr className="my-8 border-t-1 border-black w-full" />
-                <div className="mx-4 text-[20px] font-bold text-zinc-700">Informações</div>
-                <hr className="my-8 border-t-1 border-black w-full" />
-              </div>
-              <div className="text-black-border-border-black">
-                <div className="flex flex-wrap mt-5">
-                  <div className="flex flex-wrap">
-                    <div className="w-full pr-4">
-                      <CustomPet
-                        label="Nome do Pet"
-                        {...register('nomePet')}
-                        id="Nome do Pet"
-                        placeholder=""
-                        onChange={(value) => handleChange('nomePet', value)}
-                      />
-                      <CustomPet
-                        label="Raça do Pet"
-                        {...register('raca')}
-                        id="Raça do Pet"
-                        placeholder=""
-                        onChange={(value) => handleChange('raca', value)}
-                      />
-                      <CustomPet
-                        label="Idade"
-                        {...register('idade')}
-                        id="Idade"
-                        placeholder=""
-                        onChange={(value) => handleChange('idade', value)}
-                      />
-                    </div>
-                  </div>
-                </div>
+          {showCadastro && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded shadow-md">
                 <button
-                  type="submit"
-                  className="absolute bottom-4 left-4 mt-10 w-45 bg-black text-white font-bold py-2 rounded-md flex justify-center items-center hover:bg-[#cdab7e] hover:text-black"
+                  onClick={fecharDiv}
+                  className="text-black float-right"
                 >
-                  Registrar
-                  <IoMdSend className="ml-2" />
+                  <IoCloseSharp />
                 </button>
+                <h1 className="text-2xl font-semibold mb-4 text-black">Cadastrar Pet</h1>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <div className="mb-4">
+                    <label className="block text-black mb-1">Nome do Cliente</label>
+                      <input
+                        {...register('nomeCliente', { required: true })}
+                        defaultValue={cliente?.nomeCliente || ''}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        readOnly // Para impedir que o usuário edite este campo
+                      />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-black mb-1">Nome do Pet</label>
+                    <input
+                      {...register('nomePet', { required: true })}
+                      className="w-full p-2 border border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-black mb-1">Raça</label>
+                    <input
+                      {...register('raca', { required: true })}
+                      className="w-full p-2 border border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-black mb-1">Idade</label>
+                    <input
+                      {...register('idade', { required: true })}
+                      type="number"
+                      className="w-full p-2 border border-gray-300 rounded"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-[#cdab7e] text-white py-2 px-4 rounded flex items-center"
+                  >
+                    <IoMdSend className="mr-2" /> Enviar
+                  </button>
+                </form>
               </div>
-            </form>
-          </div>
-        )}
-
-</DefaultLayout>
-);
+            </div>
+          )}
+        </div>
+      
+    </DefaultLayout>
+  );
 };
 
 export default Ficha;
-
-

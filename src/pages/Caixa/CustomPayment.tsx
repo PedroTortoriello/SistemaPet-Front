@@ -2,8 +2,16 @@ import { useState } from "react";
 
 interface CustomPaymentSelectProps {
   label: string;
+  placeholder: string;
   onChange: (value: string) => void;
+  onBlur: (event: React.FocusEvent<HTMLInputElement>) => void; // Adjust the type as needed
+  ref: React.RefCallback<HTMLInputElement>; // Adjust the type as needed
+  name: string;
+  id?: string; // Optional id property
+  min?: string | number; // Optional min property
+  max?: string | number; // Optional max property
 }
+
 
 const CustomPayment: React.FC<CustomPaymentSelectProps> = ({ label, onChange }) => {
   const [focused, setFocused] = useState(false);

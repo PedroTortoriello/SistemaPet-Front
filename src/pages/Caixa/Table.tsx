@@ -5,7 +5,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import Calendar from '../Agendamento/Calendar';
-import CustomCliente from './CustomSelect';
+import CustomClientesSelect from './CustomClientes';
 import CustomPayment from './CustomPayment';
 import InputProduto from './InputProduct';
 import CustomDate from '../Agendamento/CustomDate';
@@ -28,7 +28,7 @@ const Caixa: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false); 
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [caixaData, setCaixaData] = useState<any[]>([]);
-
+  const [clientes, setClientes] = useState<any[]>([]);
   const toggleCalendar = () => setShowCalendar(!showCalendar);
 
   const handleNovoClienteClick = () => {
@@ -37,23 +37,24 @@ const Caixa: React.FC = () => {
 
   const onSubmit: SubmitHandler<Caixa> = async (data) => {
     try {
-      console.log('Dados do formulário:', data);
-  
-      // Requisição POST para adicionar uma compra
-      const postResponse = await api.post(`/clientes/${data.nomeCliente}/compras`, data);
-  
-      if (postResponse.status === 200) {
-        console.log('Compra adicionada com sucesso');
-        fetchCaixa();
-        setShowCadastro(false);
-        reset(); // Resetar o formulário após o envio
-      } else {
-        console.error('Erro ao adicionar compra');
-      }
+        console.log('Dados do formulário:', data);
+
+        const postResponse = await api.post(`/clientes/${data.nomeCliente}/compras`, data);
+        const postResponse2 = await api.post(`/caixa`, data);
+
+        if (postResponse.status === 200 && postResponse2.status === 201) {
+            console.log('Compra adicionada com sucesso');
+            fetchCaixa();
+            setShowCadastro(false);
+            reset(); // Resetar o formulário após o envio
+        } else {
+            console.error('Erro ao adicionar compra');
+        }
     } catch (error) {
-      console.error('Erro ao enviar dados:', error);
+        console.error('Erro ao enviar dados:', error);
     }
-  };
+};
+
   
   const fecharDiv = () => {
     setShowCadastro(false);
@@ -113,7 +114,7 @@ const Caixa: React.FC = () => {
   
     return caixaDoDia.map((item: any, index: number) => (
       <tr key={index}>
-        <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Usuario}</td>
+        <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.nomeCliente}</td>
         <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Pagamento}</td>
         <td className="p-2 border-t border-b border-gray-300 text-black text-center">R$ {item.Valor}</td>
         <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Produto}</td>
@@ -122,6 +123,23 @@ const Caixa: React.FC = () => {
     ));
   };
 
+  const fetchClientes = async () => {
+    try {
+      const response = await api.get('/clientes');
+      if (response.status === 200) {
+        console.log('Clientes recebidos:', response.data);
+        setClientes(response.data);
+      } else {
+        console.error('Erro ao buscar clientes');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClientes();
+  }, []);
 
   return (
     <DefaultLayout>
@@ -193,12 +211,10 @@ const Caixa: React.FC = () => {
             <div className="text-black-border-border-black">
               <div className="flex flex-wrap mt-5">
                 <div className="w-full  pr-4">
-                  <CustomCliente
-                    label="Usuario"
-                    {...register('nomeCliente')} 
-                    id="Usuario"
-                    placeholder=""
-                    onChange={(value) => handleChange('nomeCliente', value)}
+                  <CustomClientesSelect
+                  label="Nome Cliente"
+                  onChange={(value) => handleChange('nomeCliente', value)}
+                  options={clientes.map(cliente => ({ value: cliente.nomeCliente, label: cliente.nomeCliente}))} 
                   />
                 </div>
               </div>
@@ -247,7 +263,7 @@ const Caixa: React.FC = () => {
               </div>
             </div>
            
-            <button type="submit" className="absolute bottom-4 left-4 mt-10 w-45 bg-black text-white font-bold py-2 rounded-md flex justify-center items-center hover:bg-[#cdab7e] hover:text-black">
+            <button type="submit" className=" bottom-4 left-4 mt-10 w-45 text-white font-bold py-2 rounded-md flex justify-center items-center bg-[#cdab7e] hover:text-black">
               Registrar
               <IoMdSend className="ml-2" />
             </button>

@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 
-const Calendar = ({ showCalendar, toggleCalendar, onSelectMonth, currentDate }) => {
+interface CalendarProps {
+  showCalendar: boolean;
+  toggleCalendar: () => void;
+  onSelectMonth: (date: Date) => void;
+  currentDate: Date;
+}
+
+const Calendar: React.FC<CalendarProps> = ({ showCalendar, toggleCalendar, onSelectMonth, currentDate }) => {
   const [months] = useState([
     'Jan', 'Fev', 'Mar', 'Abril', 'Maio', 'Jun',
     'Jul', 'Agosto', 'Set', 'Out', 'Nov', 'Dez'
@@ -16,7 +23,7 @@ const Calendar = ({ showCalendar, toggleCalendar, onSelectMonth, currentDate }) 
     setCurrentYear(currentYear - 1);
   };
 
-  const handleMonthClick = (monthIndex) => {
+  const handleMonthClick = (monthIndex: number) => {
     console.log('Mês selecionado:', monthIndex);
     onSelectMonth(new Date(currentYear, monthIndex, 1));
     toggleCalendar(); 

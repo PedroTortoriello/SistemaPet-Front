@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { IoMdAdd, IoMdSend } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
@@ -9,9 +9,9 @@ import api from '../Authentication/scripts/api';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 
 interface Cliente {
+  cliente: ReactNode;
   id: number;
-  cliente: string;
-  animal: string;
+  nomeCliente: string;
   CPF: string;
   RG: string;
   cep: string;
@@ -24,7 +24,6 @@ interface Cliente {
 export default function TicketTable() {
   const { register, handleSubmit, setValue } = useForm<Cliente>();
   const [showCadastro, setShowCadastro] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const navigate = useNavigate(); // Criar uma instância do useNavigate
 
@@ -73,8 +72,8 @@ export default function TicketTable() {
     }
   };
 
-  const handleRowClick = (id: number) => {
-    navigate(`/Ficha/Table/${id}`);
+  const handleRowClick = (nomeCliente: string) => {
+    navigate(`/Ficha/Table/${encodeURIComponent(nomeCliente)}`);
   };
 
   return (
@@ -92,7 +91,7 @@ export default function TicketTable() {
               </th>
               <th className="py-3 px-2 whitespace-nowrap">
                 <div className="flex flex-row justify-center">
-                  <span className="text-sm font-semibold text-black">PET</span>
+                  <span className="text-sm font-semibold text-black">E-mail</span>
                 </div>
               </th>
               <th className="py-3 px-2 whitespace-nowrap">
@@ -110,10 +109,10 @@ export default function TicketTable() {
           <tbody>
             {clientes.map((cliente) => (
               <tr key={cliente.id}>
-                <td className="py-3 px-2 text-m whitespace-nowrap text-black text-center">{cliente.cliente}</td>
-                <td className="py-3 px-2 text-m whitespace-nowrap text-black text-center">{cliente.animal}</td>
+                <td className="py-3 px-2 text-m whitespace-nowrap text-black text-center">{cliente.nomeCliente}</td>
+                <td className="py-3 px-2 text-m whitespace-nowrap text-black text-center">{cliente.email}</td>
                 <td className="py-3 px-2 text-m whitespace-nowrap text-black text-center">{cliente.telefone}</td>
-                <td className="py-3 px-2 text-m whitespace-nowrap text-black font-bold" onClick={() => handleRowClick(cliente.id)} style={{cursor: 'pointer', userSelect: 'none'}}>Ver Perfil</td>
+                <td className="py-3 px-2 text-m whitespace-nowrap text-black font-bold" onClick={() => handleRowClick(cliente.id.toString())} style={{cursor: 'pointer', userSelect: 'none'}}>Ver Perfil</td>
               </tr>
             ))}
           </tbody>
@@ -144,16 +143,9 @@ export default function TicketTable() {
                   <CustomInput
                     label="Cliente"
                     {...register('nomeCliente')}
-                    id="nomeCliente"
+                    id="cliente"
                     placeholder=""
                     onChange={(value) => handleChange('nomeCliente', value)}
-                  />
-                  <CustomInput
-                    label="PET"
-                    {...register('nomePet')}
-                    id="nomePet"
-                    placeholder=""
-                    onChange={(value) => handleChange('nomePet', value)}
                   />
                 </div>
               </div>
@@ -237,7 +229,7 @@ export default function TicketTable() {
               </div>
             </div>
 
-            <div className="absolute bottom-4 left-4">
+            <div className=" bottom-4 left-4">
               <button type="submit" className="flex w-45 font-bold items-center justify-center rounded-md bg-[#cdab7e] py-2 pr-4 text-center font-medium text-black transition hover:bg-[#d5b99a]">
                 <span className="font-bold">Cadastrar</span>
                 <IoMdSend className="ml-3" />

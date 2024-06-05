@@ -2,7 +2,14 @@ import { useState } from "react";
 
 interface CustomInputProduto {
   label: string;
+  placeholder: string;
   onChange: (value: string) => void;
+  onBlur: (event: React.FocusEvent<HTMLInputElement>) => void; // Adjust the type as needed
+  ref: React.RefCallback<HTMLInputElement>; // Adjust the type as needed
+  name: string;
+  id?: string; // Optional id property
+  min?: string | number; // Optional min property
+  max?: string | number; // Optional max property
 }
 
 const InputProduto: React.FC<CustomInputProduto> = ({ label, onChange }) => {

@@ -1,45 +1,47 @@
 import React, { useState } from 'react';
 import { MdMailOutline, MdPersonOutline } from "react-icons/md";
-import { useForm } from 'react-hook-form';
-import { z } from "zod";
-import { AuthUserFormSchema } from './scripts/schemas';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from './scripts/api';
 import Button from './scripts/Button';
 import Title from './scripts/Title';
 import './StyleLogin.css';
-import { useNavigate } from 'react-router-dom';
+import { AuthUserFormSchema } from './scripts/schemas';
+import PayPalButton from './PayPal';
 
-interface Registro {
-  nome: string;
-  petshop: string;
-  codpet: string;
+interface AuthUserFormData {
   email: string;
   password: string;
-
+  nome: string;
 }
-type AuthUserFormData = z.infer<typeof AuthUserFormSchema>;
 
 const SignUp: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const navigate = useNavigate();
+  const [userRegistered, setUserRegistered] = useState(false);
+  const [, setEmail] = useState<string>("");
+  const [, setNome] = useState<string>("");
+  const [planId, setPlanId] = useState<string>("");
 
   const { register, handleSubmit } = useForm<AuthUserFormData>({
     resolver: zodResolver(AuthUserFormSchema),
   });
 
-  const onSubmit = async (data: AuthUserFormData) => {
+  const onSubmit: SubmitHandler<AuthUserFormData> = async (data) => {
     setLoading(true);
+    setError("");
+    setEmail(data.email);
+    setNome(data.nome);
     try {
-      const response = await api.post("/autenticacao", data);
-      console.log("Response from API:", response);
+      const response = await api.post("/newUsers", data);
+      console.log("Resposta da API:", response);
 
-      if (response.data.authenticate) {
-        console.log("Autenticação bem-sucedida!");
-        //navigate("/Table/Table", { state: { loggedInEmail: data.email } });
+      if (response.data.success) {
+        console.log("Usuário cadastrado com sucesso!");
+        setUserRegistered(true);
+        setPlanId(response.data.subscription.plan_id);
       } else {
-        setError("Usuário ou senha incorreta!");
+        setError(response.data.error || "Erro ao cadastrar usuário.");
       }
     } catch (error: any) {
       setError("Erro de rede. Por favor, tente novamente mais tarde.");
@@ -48,25 +50,27 @@ const SignUp: React.FC = () => {
     }
   };
 
+
+
   return (
     <div className="login-page">
       <div className="flex justify-center items-center">
-        <div className='boxLeft '>
+        <div className='boxLeft'>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Title title="Sistema PET" subtitle="" />
 
-            <div className="input-box ">
-              <label htmlFor="PetShop">PetShop<i>*</i></label>
-              <MdMailOutline id="icon" className="material-icons" />
+            <div className="input-box">
+              <label htmlFor="nome">Nome<i>*</i></label>
+              <MdPersonOutline id="icon" className="material-icons" />
               <input
                 className="input"
-                {...register("petshop")}
-                id="petshop"
-                type="petshop"
-                placeholder="Digite o nome do PetShop"
+                {...register("nome")}
+                id="nome"
+                type="text"
+                placeholder="Digite o nome do Usuário"
               />
             </div>
-            <div className="input-box ">
+            <div className="input-box">
               <label htmlFor="email">Email<i>*</i></label>
               <MdMailOutline id="icon" className="material-icons" />
               <input
@@ -91,14 +95,10 @@ const SignUp: React.FC = () => {
             </div>
 
             {error && <p className="error-message">{error}</p>}
-
-            <Button
-              name="button"
-              id="button"
-              type="submit"
-              content={loading ? "Aguarde..." : "Login"}
-              disabled={loading} link={''} target={''} p={''} span={''}            />
+            <Button type="submit" name={''} id={''} link={''} target={''} p={''} span={''} >Cadastrar</Button>
           </form>
+
+          {userRegistered && <PayPalButton clientId="ATdhPQKt5_bCp6aKm4He1TXWdZvugwh-QxH6Rd192AW40c1hEZmMWeWATNIr7Q4jw0v4ecGRPiA_tIJa" planId={planId} />}
         </div>
       </div>
     </div>

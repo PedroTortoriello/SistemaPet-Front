@@ -1,18 +1,20 @@
-import { useState } from "react";
+import React, { useState, forwardRef,  } from 'react';
 
+// Define the CustomDateProps interface with the correct onChange type
 interface CustomDateProps {
   label: string;
-  onChange: (value: string) => void;
+  id: string;
+  placeholder?: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const CustomDate: React.FC<CustomDateProps> = ({ label, register, id, placeholder }) => {
+// ForwardRef function component with correct typing for props and ref
+const CustomDate = forwardRef<HTMLInputElement, CustomDateProps>((props, ref) => {
+  const { label, id, placeholder, onChange } = props;
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState('');
 
-  const handleFocus = () => {
-    setFocused(true);
-  };
-
+  const handleFocus = () => setFocused(true);
   const handleBlur = () => {
     if (!value) {
       setFocused(false);
@@ -20,7 +22,9 @@ const CustomDate: React.FC<CustomDateProps> = ({ label, register, id, placeholde
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
+    const newValue = event.target.value;
+    setValue(newValue);
+    onChange(event);  // Pass the event to the onChange prop
   };
 
   return (
@@ -32,6 +36,7 @@ const CustomDate: React.FC<CustomDateProps> = ({ label, register, id, placeholde
         {label}
       </label>
       <input 
+        ref={ref}
         type="date"
         id={id}
         className="h-12 rounded-md border border-black px-2 py-1 text-black focus:border-black-2 focus:outline-none"
@@ -40,10 +45,9 @@ const CustomDate: React.FC<CustomDateProps> = ({ label, register, id, placeholde
         onChange={handleChange}
         value={value}
         placeholder={placeholder}
-        ref={register}
       />
     </div>
   );
-};
+});
 
 export default CustomDate;

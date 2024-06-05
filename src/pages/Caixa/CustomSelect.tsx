@@ -3,8 +3,16 @@ import api from "../Authentication/scripts/api";
 
 interface CustomClienteSelectProps {
   label: string;
+  placeholder: string;
   onChange: (value: string) => void;
+  onBlur: (event: React.FocusEvent<HTMLInputElement>) => void; // Adjust the type as needed
+  ref: React.RefCallback<HTMLInputElement>; // Adjust the type as needed
+  name: string;
+  id?: string; // Optional id property
+  min?: string | number; // Optional min property
+  max?: string | number; // Optional max property
 }
+
 
 interface Clientes {
   cliente: string;

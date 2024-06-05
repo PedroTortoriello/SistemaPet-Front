@@ -3,6 +3,8 @@ import React, { useState } from "react";
 interface CustomSelectSelectProps {
   label: string;
   onChange: (value: string) => void;
+  id?: string
+  placeholder?: string
 }
 
 const CustomSelect: React.FC<CustomSelectSelectProps> = ({ label, onChange }) => {

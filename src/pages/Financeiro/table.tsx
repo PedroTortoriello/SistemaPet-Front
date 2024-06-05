@@ -11,7 +11,6 @@ import CustomAlim from './CustomEstoque';
 import CustomCuidado from './CustomProducts2';
 import CustomBrinquedos from './CustomProducts3';
 import CustomDate from './CustomDate';
-import Checkbox from './CustomCheck';
 import CardDataStats from './CardDataStats';
 import { MdOutlineAttachMoney, MdOutlineMoneyOffCsred } from 'react-icons/md';
 import api from '../Authentication/scripts/api';
@@ -31,36 +30,26 @@ interface Contas {
 const Financeiro: React.FC = () => {
     const { register, handleSubmit } = useForm();
     const [showCadastro, setShowCadastro] = useState(false);
-    const [selectedType, setSelectedType] = useState('');
-    const [selectedWeight, setSelectedWeight] = useState('');
-    const [showOtherWeightInput, setShowOtherWeightInput] = useState(false);
-    const [focused, setFocused] = useState(false);
-    const [value, setValue] = useState('');
-    const [Contas, setContas] = useState<Contas[]>([]);
+    const [selectedType,] = useState('');
+    const [, setSelectedWeight] = useState('');    const [showOtherWeightInput, setShowOtherWeightInput] = useState(false);
     const [ContasData, setContasData] = useState<any[]>([]);
-    const [selectedMonth, setSelectedMonth] = useState(null);
-    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
+    const [currentDate, ] = useState(new Date());
     const [showCalendar, setShowCalendar] = useState(false); 
-
     const toggleCalendar = () => setShowCalendar(!showCalendar);
-    
-    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setValue(event.target.value);
-        setSelectedMarca(event.target.value);
-        onChange(event.target.value);
-      };
-    
-      const handleBlur = () => {
-        if (!value) {
-          setFocused(false);
-        }
-      };
+    const [higiene, setHigiene] = useState<any[]>([]);
+    const [brinquedos, setBrinquedos] = useState<any[]>([]);
+
+
+    const handleChange = (_p0: string, _value: string) => {
+
+    }
 
     const handleNovoClienteClick = () => {
         setShowCadastro(true);
     };
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (_data: any) => {
         try {
             setShowCadastro(false);
         } catch (error) {
@@ -70,10 +59,6 @@ const Financeiro: React.FC = () => {
 
     const fecharDiv = () => {
         setShowCadastro(false);
-    };
-
-    const handleTipoChange = (tipo: string) => {
-        setSelectedType(tipo);
     };
 
     const handlePesoChange = (peso: string) => {
@@ -86,8 +71,20 @@ const Financeiro: React.FC = () => {
         }
     };
 
-    const handleMarcaChange = (marca: string) => {
-        setSelectedMarca(marca);
+
+    const handleHigieneChange = (value: string) => {
+        // Faça o que for necessário com o valor recebido, por exemplo:
+        console.log("Novo valor de higiene:", value);
+        // Ou atualize algum estado
+        setHigiene([...higiene, value]);
+
+    };
+
+    const handleBrinquedosChange = (value: string) => {
+        // Faça o que for necessário com o valor recebido, por exemplo:
+        console.log("Novo valor de Brinquedos:", value);
+        // Ou atualize algum estado
+        setBrinquedos([...brinquedos, value]);
     };
 
     const fetchContas = async () => {
@@ -131,7 +128,7 @@ const Financeiro: React.FC = () => {
         if (contasDoMes.length === 0) {
           return (
             <tr>
-              <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan="5">
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan={5}>
               </td>
             </tr>
           );
@@ -155,7 +152,7 @@ const Financeiro: React.FC = () => {
     
       
       
-      const onSelectMonth = (date) => {
+      const onSelectMonth = (date: React.SetStateAction<Date | null>) => {
         setSelectedMonth(date);
         toggleCalendar();
       };
@@ -190,7 +187,7 @@ const Financeiro: React.FC = () => {
                 </div>
             </div>
 
-            <div className="mt-30 w-50 md:flex md:space-x-4">
+            <div className="mt-15 w-50 md:flex md:space-x-4">
                 <CardDataStats title="Valor a Pagar" total="R$200,00">
                     <MdOutlineMoneyOffCsred color="red" size="22" />
                 </CardDataStats>
@@ -248,8 +245,8 @@ const Financeiro: React.FC = () => {
                                     {...register('Dia')}
                                     id="Dia"
                                     placeholder=""
-                                    onChange={(value) => handleChange('Dia', value)}
-                                />
+                                    onChange={(event) => handleChange('Dia', event.target.value)} // Passando o valor extraído do evento
+                                    />
                                 </div>
                             </div>
                             <div className="flex flex-wrap">
@@ -279,15 +276,15 @@ const Financeiro: React.FC = () => {
                                         />
                                     </div>
                                 )}
-                                {selectedType === 'Higiene e Cuidado' && (
+                              {selectedType === 'Higiene e Cuidado' && (
                                     <div className="w-full pr-4">
-                                        <CustomCuidado label="Higiene e Cuidados"/>
+                                        <CustomCuidado label="Higiene e Cuidados" {...register('higiene')} onChange={handleHigieneChange}/>
                                     </div>
                                 )}
 
                                 {selectedType === 'Brinquedos' && (
                                     <div className="w-full pr-4">
-                                        <CustomBrinquedos label="Brinquedos"/>
+                                        <CustomBrinquedos label="Brinquedos" {...register('brinquedos')} onChange={handleBrinquedosChange}/>
                                     </div>
                                 )}
                             </div>

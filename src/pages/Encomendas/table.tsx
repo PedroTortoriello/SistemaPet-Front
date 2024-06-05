@@ -4,20 +4,19 @@ import { IoMdAdd, IoMdArrowBack, IoMdArrowForward, IoMdSend } from "react-icons/
 import { IoCloseSharp } from "react-icons/io5";
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { useForm } from 'react-hook-form';
-import CustomInput from '../Table/CustomInput'
 import CustomSelect from './CustomSelect';
 import CustomPeso from './CustomPeso';
 import CustomAlim from './CustomEstoque';
 import CustomCuidado from './CustomProducts2';
 import CustomBrinquedos from './CustomProducts3';
 import CustomDate from './CustomDate';
-import Checkbox from './CustomCheck';
 import Calendar from './Calendar';
 import api from '../Authentication/scripts/api';
 import CustomCheck from './CustomCheck';
 
 interface Encomenda {
-    Data: string;
+    Dia: string;
+    Valor: string;
     Produto: string;
     Quantidade: string;
     Peso: string;
@@ -27,32 +26,40 @@ const Encomendas: React.FC = () => {
     const { register, handleSubmit } = useForm();
     const [showCadastro, setShowCadastro] = useState(false);
     const [selectedType, setSelectedType] = useState('');
-    const [selectedWeight, setSelectedWeight] = useState('');
-    const [showOtherWeightInput, setShowOtherWeightInput] = useState(false);
-    const [focused, setFocused] = useState(false);
-    const [value, setValue] = useState('');
+    const [, setSelectedWeight] = useState('');
+    const [, setShowOtherWeightInput] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [showCalendar, setShowCalendar] = useState(false); 
-    const [selectedMonth, setSelectedMonth] = useState(null);
-    const [EncomendaData, setEncomendaData] = useState<any[]>([]);
-
-    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setValue(event.target.value);
-        setSelectedMarca(event.target.value);
-        onChange(event.target.value);
-      };
+    const [encomendaData, setEncomendaData] = useState<Encomenda[]>([]);
+    const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
+    const [, setSelectedMarca] = useState<any[]>([]);
+    const [higiene, setHigiene] = useState<any[]>([]);
+    const [brinquedos, setBrinquedos] = useState<any[]>([]);
     
-      const handleBlur = () => {
-        if (!value) {
-          setFocused(false);
-        }
-      };
-
     const handleNovoClienteClick = () => {
         setShowCadastro(true);
     };
 
-    const onSubmit = async (data: any) => {
+    const handleMarcaChange = (marca: string) => {
+        setSelectedMarca([...marca]);;
+    };
+
+    const handleHigieneChange = (value: string) => {
+        // Faça o que for necessário com o valor recebido, por exemplo:
+        console.log("Novo valor de higiene:", value);
+        // Ou atualize algum estado
+        setHigiene([...higiene, value]);
+
+    };
+
+      const handleBrinquedosChange = (value: string) => {
+        // Faça o que for necessário com o valor recebido, por exemplo:
+        console.log("Novo valor de Brinquedos:", value);
+        // Ou atualize algum estado
+        setBrinquedos([...brinquedos, value]);
+    };
+
+    const onSubmit = async () => {
         try {
             setShowCadastro(false);
         } catch (error) {
@@ -78,26 +85,15 @@ const Encomendas: React.FC = () => {
         }
     };
 
-    const handleMarcaChange = (marca: string) => {
-        setSelectedMarca(marca);
-    };
-
-
-
     const toggleCalendar = () => setShowCalendar(!showCalendar);
 
     const fetchEncomenda = async () => {
         try {
-            const date = selectedMonth || currentDate;
-            const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-            console.log('Data para buscar Encomenda:', dateString);
-            
-            const response = await api.get('/encomendas', { params: { data: dateString } });
+            const response = await api.get('/encomendas');
     
             if (response.status === 200) {
                 console.log('Dados do Encomenda recebidos:', response.data);
-                const EncomendaDataFromAPI: Encomenda[] = response.data;
-                setEncomendaData(EncomendaDataFromAPI);
+                setEncomendaData(response.data);
             } else {
                 console.error('Erro ao buscar Encomenda');
             }
@@ -106,36 +102,23 @@ const Encomendas: React.FC = () => {
         }
     };
       
-      // Call fetchCaixa when selectedMonth or currentDate changes
     useEffect(() => {
         fetchEncomenda();
-    }, [currentDate, selectedMonth]);
+    }, []);
       
-
     const renderEncomenda = () => {
-        const EncomendasDoMes = EncomendaData.filter((item) => {
-            const itemData = new Date(item.Data);  // Use "Data" aqui, de acordo com o formato do JSON recebido
-            const selectedDate = selectedMonth || currentDate;
-            const itemYear = itemData.getFullYear();
-            const itemMonth = itemData.getMonth() + 1;
-            const selectedYear = selectedDate.getFullYear();
-            const selectedMonthValue = selectedDate.getMonth() + 1;
-    
-            return itemYear === selectedYear && itemMonth === selectedMonthValue;
-        });
-    
-        if (EncomendasDoMes.length === 0) {
+        if (encomendaData.length === 0) {
             return (
                 <tr>
-                    <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan="5">
-        
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan={7}>
+                        Nenhum dado encontrado.
                     </td>
                 </tr>
             );
         }
-    
-        return EncomendasDoMes.map((item, index) => {
-            const formattedDate = new Date(item.Data).toLocaleDateString('pt-BR');
+
+        return encomendaData.map((item, index) => {
+            const formattedDate = new Date(item.Dia).toLocaleDateString('pt-BR');
       
             return (
                 <tr key={index}>
@@ -143,49 +126,66 @@ const Encomendas: React.FC = () => {
                     <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Produto}</td>
                     <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Quantidade}</td>
                     <td className="p-2 border-t border-b border-gray-300 text-black text-center">{item.Peso}</td>
-                    <td className="p-2 border-t border-b border-gray-300 text-black text-center"><CustomCheck color="green"/></td>
-                    <td className="p-2 border-t border-b border-gray-300 text-black text-center"><CustomCheck color="red"/></td>
+                    <td className="p-2 border-t border-b border-gray-300 text-black text-center">R$ {item.Valor}</td>
                 </tr>
             );
         });
     };
-    
-    
            
-      const onSelectMonth = (date) => {
+    const onSelectMonth = (date: Date | null) => {
         setSelectedMonth(date);
         toggleCalendar();
-      };
+    };
+
+    const handlePrevMonth = () => {
+        console.log("Avançar para o mês anterior");
+        const prevDate = new Date(currentDate);
+        prevDate.setMonth(prevDate.getMonth() - 1);
+        setCurrentDate(prevDate);
+    };
+    
+    const handleNextMonth = () => {
+        console.log("Avançar para o próximo mês");
+        const nextDate = new Date(currentDate);
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        setCurrentDate(nextDate);
+    };
 
     return (
         <DefaultLayout>
             <Breadcrumb pageName="Encomendas" />
             <div className="mt-20 flex justify-center items-center">
                 <div className="flex items-center">
+                    <button className="mr-4 text-black" onClick={handlePrevMonth}>
+                        <IoMdArrowBack size={24} />
+                    </button>
                     <div className="relative">
-                    <h2 
-                        className="text-xl font-bold text-black border bg-[#cdab7e] cursor-pointer" 
-                        onClick={toggleCalendar}
-                    >
-                        {selectedMonth ? 
-                        `${selectedMonth.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + selectedMonth.toLocaleString('default', { month: 'long' }).slice(1)} ${selectedMonth.getFullYear()}` 
-                        : 
-                        `${currentDate.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + currentDate.toLocaleString('default', { month: 'long' }).slice(1)} ${currentDate.getFullYear()}`
-                        }
-                    </h2>
+                        <h2 
+                            className="text-xl font-bold text-black border bg-[#cdab7e] cursor-pointer" 
+                            onClick={toggleCalendar}
+                        >
+                            {selectedMonth ? 
+                            `${selectedMonth.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + selectedMonth.toLocaleString('default', { month: 'long' }).slice(1)} ${selectedMonth.getFullYear()}` 
+                            : 
+                            `${currentDate.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + currentDate.toLocaleString('default', { month: 'long' }).slice(1)} ${currentDate.getFullYear()}`
+                            }
+                        </h2>
 
-                    <div className="absolute left-[-50px] mt-0">
-                        <Calendar
-                        showCalendar={showCalendar}
-                        toggleCalendar={toggleCalendar}
-                        onSelectMonth={onSelectMonth}
-                        currentDate={currentDate}
-                        />
+                        <div className="absolute left-[-50px] mt-0">
+                            <Calendar
+                                showCalendar={showCalendar}
+                                toggleCalendar={toggleCalendar}
+                                onSelectMonth={onSelectMonth}
+                                onSelectDay={() => {}}
+                                currentDate={currentDate}
+                            />
+                        </div>
                     </div>
+                    <button className="ml-4 text-black" onClick={handleNextMonth}>
+                        <IoMdArrowForward size={24} /> 
+                    </button>
                 </div>
             </div>
-
-      </div>
             <div className="mt-15 border rounded-b-md">
                 <div className="overflow-x-auto">
                     <table className="w-full text-black">
@@ -194,15 +194,13 @@ const Encomendas: React.FC = () => {
                                 <th className="px-4 py-2">Dia</th>
                                 <th className="px-4 py-2">Produto</th>
                                 <th className="px-4 py-2">Quantidade</th>
-                                <th className="px-4 py-2">Peso / Tamanho</th>
-                                <th className="px-4 py-2">Entregue</th>
-                                <th className="px-4 py-2">Faltou</th>
+                                <th className="px-4 py-2">Peso</th>
+                                <th className="px-4 py-2">Valor</th>
                             </tr>
                         </thead>
-                        <tbody className='p-2 border-b border-gray-300 text-black text-center'>
+                        <tbody>
                             {renderEncomenda()}
                         </tbody>
-
                     </table>
                 </div>
             </div>
@@ -231,7 +229,7 @@ const Encomendas: React.FC = () => {
                                 <div className="w-full pr-4 relative mb-4">
                                     <CustomDate 
                                         label="Data da Encomenda"
-                                        register={register('date')}
+                                        {...register('date')}
                                         id="date"
                                         placeholder=""
                                     />
@@ -248,20 +246,15 @@ const Encomendas: React.FC = () => {
                                     </div>
                                 )}
 
-                                {showOtherWeightInput && (
-                                    <div className="w-full pr-4">
-                                        <CustomInput label="Peso" register={register('peso')} id="peso" placeholder="Digite o peso" />
-                                    </div>
-                                )}
                                 {selectedType === 'Higiene e Cuidado' && (
                                     <div className="w-full pr-4">
-                                        <CustomCuidado label="Higiene e Cuidados"/>
+                                        <CustomCuidado label="Higiene e Cuidados" {...register('higiene')} onChange={handleHigieneChange}/>
                                     </div>
                                 )}
 
                                 {selectedType === 'Brinquedos' && (
                                     <div className="w-full pr-4">
-                                        <CustomBrinquedos label="Brinquedos"/>
+                                        <CustomBrinquedos label="Brinquedos" {...register('brinquedos')} onChange={handleBrinquedosChange}/>
                                     </div>
                                 )}
                             </div>
@@ -279,3 +272,5 @@ const Encomendas: React.FC = () => {
 };
 
 export default Encomendas;
+
+

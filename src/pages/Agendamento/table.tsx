@@ -11,6 +11,7 @@ import { IoCloseSharp } from 'react-icons/io5';
 import Calendar from './Calendar';
 import CustomCheck from './CustomCheck';
 import CustomService from './CustomService';
+import CustomClientesSelect from './CustomClientes';
 
 interface FormData {
   cliente: string;
@@ -29,7 +30,7 @@ const Agenda: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [agendaData, setAgendaData] = useState<any[]>([]);
-
+  const [clientes, setClientes] = useState<any[]>([]);
   const toggleCalendar = () => setShowCalendar(!showCalendar);
 
   const handleNovoClienteClick = () => {
@@ -161,6 +162,23 @@ const Agenda: React.FC = () => {
     return horarios;
   };
   
+  const fetchClientes = async () => {
+    try {
+      const response = await api.get('/clientes');
+      if (response.status === 200) {
+        console.log('Clientes recebidos:', response.data);
+        setClientes(response.data);
+      } else {
+        console.error('Erro ao buscar clientes');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClientes();
+  }, []);
 
   return (
     <DefaultLayout>
@@ -215,15 +233,13 @@ const Agenda: React.FC = () => {
         </div>
       </div>
 
-      <div className="mt-5 flex justify-center">
-        <button
-          className="flex items-center bg-[#cdab7e] text-white px-4 py-2 rounded hover:bg-[#d5b99a] focus:outline-none"
-          onClick={handleNovoClienteClick}
-        >
-          <IoMdAdd size={20} className="mr-2" />
-          Novo Agendamento
+      <div className="flex mt-5">
+        <button type="button" onClick={handleNovoClienteClick} className="flex w-43 font-bold items-center justify-center rounded-md bg-[#cdab7e] py-2 pr-4 text-center font-medium text-black transition hover:bg-[#d5b99a]">
+          <span className="font-bold ml-1">Agendar Cliente</span>
+          <IoMdAdd className="ml-1" />
         </button>
       </div>
+
 
       {showCadastro && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -240,23 +256,28 @@ const Agenda: React.FC = () => {
             </div>
             <div className="flex flex-wrap">
               <div className="w-full pr-4">
-                <CustomInput
+              <CustomClientesSelect
                   label="Nome Cliente"
-                  {...register('cliente')}
-                  id="cliente"
-                  placeholder="Digite o nome do cliente"
                   onChange={(value) => handleChange('cliente', value)}
+                  onClientSelect={(client) => {
+                    // Atualize os campos de e-mail e telefone com os detalhes do cliente selecionado
+                    setValue('email', client.email);
+                    setValue('telefone', client.telefone);
+                  }}
+                  options={clientes.map(cliente => ({ value: cliente.nomeCliente, label: cliente.nomeCliente, email: cliente.email, telefone: cliente.telefone }))} 
                 />
+
               </div>
             </div>
             <div className="flex flex-wrap">
               <div className="w-full pr-4">
-                <CustomInput
+                <CustomClientesSelect
                   label="PET"
                   {...register('animal')}
-                  id="animal"
-                  placeholder=""
-                  onChange={(value) => handleChange('animal', value)}
+                  id="PET"
+                  placeholder="Digite o nome do PET"
+                  onChange={(value) => handleChange('cliente', value)}
+                  options={clientes.map(cliente => ({ value: cliente.nomePet, label: cliente.nomePet }))} // Passa as opções de clientes
                 />
               </div>
               <div className="md:flex md:space-x-4 w-full">

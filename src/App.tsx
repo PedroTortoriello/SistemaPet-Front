@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import PageTitle from './components/PageTitle';
-import SignIn from './pages/Authentication/SignIn';
+import SignIn from './pages/Authentication/SignIn-Admin';
 import TicketTable from './pages/Table/Table';
 import Caixa from './pages/Caixa/Table';
 import RatTable from './pages/Agendamento/table';
@@ -10,10 +10,14 @@ import Encomendas from './pages/Encomendas/table';
 import Financeiro from './pages/Financeiro/table';
 import Ficha from './pages/Ficha/Table';
 import SignUp from './pages/Authentication/SignUp';
+import Inicial from './pages/Inicial/Table';
+import SignInUser from './pages/Authentication/SignIn-User';
+import Pagamento from './pages/Pagamentos/Table';
+import Mensal from './pages/Pagamentos/TableMensal';
 
 function App() {
   const { pathname } = useLocation();
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [, setUserEmail] = useState<string>("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -33,14 +37,14 @@ function App() {
         index
         element={
           <>
-            <PageTitle title="Pet System" />
-            <SignIn />
+            <PageTitle title="Pet System" />          
+            <Inicial />
           </>
         }
       />
 
       <Route
-        path="/Authentication/SignUp"
+        path="/Cadastro"
         element={
           <>
           <PageTitle title="Pet System" />
@@ -48,6 +52,27 @@ function App() {
           </> 
         }
       />
+
+      <Route
+        path="/Authentication/SignIn-Admin"
+        element={
+          <>
+          <PageTitle title="Pet System" />
+          <SignIn/>
+          </> 
+        }
+      />
+
+      <Route
+        path="/Authentication/SignIn-User"
+        element={
+          <>
+          <PageTitle title="Pet System" />
+          <SignInUser/>
+          </> 
+        }
+      />
+
 
       <Route
         path="/Caixa/Table"
@@ -113,6 +138,24 @@ function App() {
           <>
             <PageTitle title="Pet System" />
             <TicketTable  />
+          </>
+        }
+      />
+      <Route
+        path="/Pagamento"
+        element={
+          <>
+            <PageTitle title="Pet System" />
+            <Pagamento  />
+          </>
+        }
+      />
+      <Route
+        path="/Mensalidade"
+        element={
+          <>
+            <PageTitle title="Pet System" />
+            <Mensal  />
           </>
         }
       />

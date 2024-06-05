@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { IoMdAdd, IoMdArrowBack, IoMdArrowForward, IoMdSend } from "react-icons/io";
+import { IoMdAdd, IoMdSend, IoMdArrowBack, IoMdArrowForward } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { useForm } from 'react-hook-form';
-import CustomInput from '../Table/CustomInput'
+import CustomInput from './CustomInput';
 import CustomSelect from './CustomSelect';
 import CustomPeso from './CustomPeso';
 import CustomAlim from './CustomEstoque';
@@ -26,35 +26,41 @@ const Estoque: React.FC = () => {
     const { register, handleSubmit } = useForm();
     const [showCadastro, setShowCadastro] = useState(false);
     const [selectedType, setSelectedType] = useState('');
-    const [selectedWeight, setSelectedWeight] = useState('');
-    const [showOtherWeightInput, setShowOtherWeightInput] = useState(false);
-    const [focused, setFocused] = useState(false);
-    const [value, setValue] = useState('');
-    const [estoque, setEstoque] = useState<Estoque[]>([]);
+    const [, setSelectedWeight] = useState('');
+    const [, setShowOtherWeightInput] = useState(false); 
     const [EstoqueData, setEstoqueData] = useState<any[]>([]);
-    const [selectedMonth, setSelectedMonth] = useState(null);
+    const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [showCalendar, setShowCalendar] = useState(false); 
-
+    const [, setSelectedMarca] = useState(''); 
+    const [higiene, setHigiene] = useState<any[]>([]);
+    const [brinquedos, setBrinquedos] = useState<any[]>([]);
     const toggleCalendar = () => setShowCalendar(!showCalendar);
     
-    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setValue(event.target.value);
-        setSelectedMarca(event.target.value);
-        onChange(event.target.value);
-      };
+    const handlePrevMonth = () => {
+        console.log("Avançar para o mês anterior");
+        const prevDate = new Date(currentDate);
+        prevDate.setMonth(prevDate.getMonth() - 1);
+        setCurrentDate(prevDate);
+    };
     
-      const handleBlur = () => {
-        if (!value) {
-          setFocused(false);
-        }
-      };
+    const handleNextMonth = () => {
+        console.log("Avançar para o próximo mês");
+        const nextDate = new Date(currentDate);
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        setCurrentDate(nextDate);
+    };
 
+    const handleValorChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const newValue = event.target.value;
+        console.log("Novo valor:", newValue);
+    };
+    
     const handleNovoClienteClick = () => {
         setShowCadastro(true);
     };
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (_data: any) => {
         try {
             setShowCadastro(false);
         } catch (error) {
@@ -87,7 +93,6 @@ const Estoque: React.FC = () => {
     const fetchCaixa = async () => {
         try {
           const date = selectedMonth || currentDate;
-          // Para buscar dados do mês, envie apenas o mês e ano
           const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
           console.log('Data para buscar Caixa:', dateString);
           
@@ -105,11 +110,9 @@ const Estoque: React.FC = () => {
         }
     };
       
-      // Call fetchCaixa when selectedMonth or currentDate changes
     useEffect(() => {
         fetchCaixa();
     }, [currentDate, selectedMonth]);
-      
 
     const renderEstoque = () => {
         const caixaDoMes = EstoqueData.filter((item) => {
@@ -126,7 +129,7 @@ const Estoque: React.FC = () => {
         if (caixaDoMes.length === 0) {
           return (
             <tr>
-              <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan="5">
+              <td className="p-2 border-t border-b border-gray-300 text-black text-center" colSpan={5}>
               </td>
             </tr>
           );
@@ -146,44 +149,55 @@ const Estoque: React.FC = () => {
           );
         });
     };
-    
-      
-      
-      const onSelectMonth = (date) => {
+
+    const handleHigieneChange = (value: string) => {
+        console.log("Novo valor de higiene:", value);
+        setHigiene([...higiene, value]);
+    };
+
+    const handleBrinquedosChange = (value: string) => {
+        console.log("Novo valor de Brinquedos:", value);
+        setBrinquedos([...brinquedos, value]);
+    };
+
+    const onSelectMonth = (date: Date | null) => {
         setSelectedMonth(date);
         toggleCalendar();
-      };
+    };
 
     return (
         <DefaultLayout>
             <Breadcrumb pageName="Estoque" />
-
             <div className="mt-20 flex justify-center items-center">
                 <div className="flex items-center">
+                    <button className="mr-4 text-black" onClick={handlePrevMonth}>
+                        <IoMdArrowBack size={24} />
+                    </button>
                     <div className="relative">
-                    <h2 
-                        className="text-xl font-bold text-black border bg-[#cdab7e] cursor-pointer" 
-                        onClick={toggleCalendar}
-                    >
-                        {selectedMonth ? 
-                        `${selectedMonth.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + selectedMonth.toLocaleString('default', { month: 'long' }).slice(1)} ${selectedMonth.getFullYear()}` 
-                        : 
-                        `${currentDate.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + currentDate.toLocaleString('default', { month: 'long' }).slice(1)} ${currentDate.getFullYear()}`
-                        }
-                    </h2>
-
-                    <div className="absolute left-[-50px] mt-0">
-                        <Calendar
-                        showCalendar={showCalendar}
-                        toggleCalendar={toggleCalendar}
-                        onSelectMonth={onSelectMonth}
-                        currentDate={currentDate}
-                        />
-                    </div>
+                        <h2 
+                            className="text-xl font-bold text-black border bg-[#cdab7e] cursor-pointer" 
+                            onClick={toggleCalendar}
+                        >
+                            {selectedMonth ? 
+                            `${selectedMonth.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + selectedMonth.toLocaleString('default', { month: 'long' }).slice(1)} ${selectedMonth.getFullYear()}` 
+                            : 
+                            `${currentDate.toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + currentDate.toLocaleString('default', { month: 'long' }).slice(1)} ${currentDate.getFullYear()}`
+                            }
+                        </h2>
+                        <div className="absolute left-[-50px] mt-0">
+                            <Calendar
+                                showCalendar={showCalendar}
+                                toggleCalendar={toggleCalendar}
+                                onSelectMonth={onSelectMonth}
+                                currentDate={currentDate}
+                            />
+                        </div>
                     </div>
                 </div>
+                <button className="ml-4 text-black" onClick={handleNextMonth}>
+                     <IoMdArrowForward size={24} /> 
+                </button>
             </div>
-        
             <div className="mt-15 border rounded-b-md">
                 <div className="overflow-x-auto">
                     <table className="w-full text-black">
@@ -199,18 +213,15 @@ const Estoque: React.FC = () => {
                         <tbody className='p-2 border-b border-gray-300 text-black text-center'>
                             {renderEstoque()}
                         </tbody>
-
                     </table>
                 </div>
             </div>
-
             <div className="absolute bottom-4 left-4">
                 <button type="button" onClick={handleNovoClienteClick} className="flex w-40 font-bold items-center justify-center rounded-md bg-[#cdab7e] py-2 pr-4 text-center font-medium text-black transition hover:bg-[#d5b99a]">
                     <span className="font-bold">Adicionar</span>
                     <IoMdAdd className="ml-1" />
                 </button>
             </div>
-
             {showCadastro && (
                 <div className="fixed top-0 right-0 h-full overflow-y-auto bg-white w-[400px] shadow-lg ">
                     <div className="border h-20 border-black bg-[#cccccc] relative">
@@ -228,14 +239,14 @@ const Estoque: React.FC = () => {
                                 <div className="w-full pr-4 relative mb-4">
                                     <CustomDate 
                                         label="Data de Entrega"
-                                        register={register('date')}
+                                        {...register('date')}
                                         id="date"
                                         placeholder=""
                                     />
                                 </div>
                             </div>
                             <div className="flex flex-wrap">
-                                  <div className="w-full pr-4">
+                                <div className="w-full pr-4">
                                     <CustomSelect label="Tipo" options={["Alimentação", "Higiene e Cuidado", "Brinquedos"]} onChange={handleTipoChange} />
                                 </div>
                                 {selectedType === 'Alimentação' && (
@@ -244,35 +255,27 @@ const Estoque: React.FC = () => {
                                         <CustomPeso label="Peso" onChange={handlePesoChange} />
                                     </div>
                                 )}
-
-                                {showOtherWeightInput && (
-                                    <div className="w-full pr-4">
-                                        <CustomInput label="Peso" register={register('peso')} id="peso" placeholder="Digite o peso" />
-                                    </div>
-                                )}
                                 {selectedType === 'Higiene e Cuidado' && (
                                     <div className="w-full pr-4">
-                                        <CustomCuidado label="Higiene e Cuidados"/>
+                                        <CustomCuidado label="Higiene e Cuidados" {...register('higiene')} onChange={handleHigieneChange}/>
                                     </div>
                                 )}
-
                                 {selectedType === 'Brinquedos' && (
                                     <div className="w-full pr-4">
-                                        <CustomBrinquedos label="Brinquedos"/>
+                                        <CustomBrinquedos label="Brinquedos" {...register('brinquedos')} onChange={handleBrinquedosChange}/>
                                     </div>
                                 )}
                             </div>
                             <div className="w-full pr-4">
                                 <CustomInput
                                     label="Valor da Unidade"
-                                    register={register('Valor')}
+                                    {...register('Valor')}
                                     id="Valor"
                                     placeholder=""
                                     prefix="R$" 
-                                    
+                                    onChange={handleValorChange}
                                 />
-
-                                </div>
+                            </div>
                             <button type="submit" className="absolute bottom-4 left-4 mt-10 w-45 bg-black text-white font-bold py-2 rounded-md flex justify-center items-center hover:bg-[#cdab7e] hover:text-black">
                                 Registrar
                                 <IoMdSend className="ml-2" />

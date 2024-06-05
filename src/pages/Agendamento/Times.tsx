@@ -1,15 +1,9 @@
-import React, { useState } from 'react';
+
 
 function Times() {
-  const [selectedTimes, setSelectedTimes] = useState([]);
 
-  const handleTimeClick = (time) => {
-    if (selectedTimes.includes(time)) {
-      setSelectedTimes(selectedTimes.filter(t => t !== time));
-    } else {
-      setSelectedTimes([...selectedTimes, time]);
-    }
-  };
+
+
 
     return (
       <div className="w-[280px] p-[15px] border border-black">

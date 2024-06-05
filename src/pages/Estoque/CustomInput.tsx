@@ -1,31 +1,34 @@
-import React, { useState, forwardRef,  } from 'react';
+import { ChangeEvent, forwardRef, useState } from "react";
 
-// Define the CustomDateProps interface with the correct onChange type
-interface CustomDateProps {
+interface CustomInputProps {
   label: string;
   id: string;
-  placeholder?: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+  prefix?: string;
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void; // Adjusted onChange signature
 }
 
-// ForwardRef function component with correct typing for props and ref
-const CustomDate = forwardRef<HTMLInputElement, CustomDateProps>((props, ref) => {
-  const { label, id, placeholder, onChange } = props;
+const CustomInput: React.ForwardRefRenderFunction<HTMLInputElement, CustomInputProps> = (
+  { label, id, placeholder, prefix, onChange }, // Adjusted onChange in props destructuring
+  ref
+) => {
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState('');
 
   const handleFocus = () => setFocused(true);
   const handleBlur = () => {
-    if (!value) {
-      setFocused(false);
+    if (!value) setFocused(false);
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    setValue(newValue);
+    if (onChange) {
+      onChange(event); // Passing event object to onChange
     }
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    setValue(newValue);
-    onChange(event);  // Pass the event to the onChange prop
-  };
+  const displayedValue = prefix ? `${prefix} ${value}` : value;
 
   return (
     <div className={`relative mb-4 flex flex-col ${focused || value ? 'mt-2' : 'mt-4'}`}>
@@ -37,17 +40,17 @@ const CustomDate = forwardRef<HTMLInputElement, CustomDateProps>((props, ref) =>
       </label>
       <input 
         ref={ref}
-        type="date"
+        type="text"
         id={id}
         className="h-12 rounded-md border border-black px-2 py-1 text-black focus:border-black-2 focus:outline-none"
         onFocus={handleFocus}
         onBlur={handleBlur}
         onChange={handleChange}
-        value={value}
+        value={displayedValue}
         placeholder={placeholder}
       />
     </div>
   );
-});
+};
 
-export default CustomDate;
+export default forwardRef(CustomInput);

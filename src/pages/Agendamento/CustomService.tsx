@@ -3,6 +3,8 @@ import React, { useState } from "react";
 interface CustomServiceSelectProps {
   label: string;
   onChange: (value: string) => void;
+  id?: string
+  placeholder?: string
 }
 
 const CustomService: React.FC<CustomServiceSelectProps> = ({ label, onChange }) => {

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
-const Checkbox = ({ color }) => {
+interface CheckProps {
+    color: string;
+}
+
+const Checkbox: React.FC<CheckProps> = ({ color }) => {
     const [checked, setChecked] = useState(false);
 
     const handleCheckboxChange = () => {
