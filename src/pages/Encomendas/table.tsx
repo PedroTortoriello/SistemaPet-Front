@@ -85,8 +85,8 @@ const Encomendas: React.FC = () => {
         }
     };
     const handleValorChange = (valor: string) => {
-
-    };
+        console.log("Valor changed:", valor);
+      };
 
     const toggleCalendar = () => setShowCalendar(!showCalendar);
 
@@ -245,7 +245,7 @@ const Encomendas: React.FC = () => {
                                 {selectedType === 'Alimentação' && (
                                     <div className="w-full pr-4">
                                         <CustomAlim label="Marca de Alimentação" onChange={handleMarcaChange} />
-
+                                        <CustomPeso label="Peso" onChange={handlePesoChange}/>
                                         <CustomInput label="Valor" onChange={handleValorChange} id={''} placeholder={''} />
                                     </div>
                                 )}
