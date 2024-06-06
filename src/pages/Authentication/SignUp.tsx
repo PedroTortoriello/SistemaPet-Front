@@ -16,7 +16,7 @@ interface AuthUserFormData {
 }
 
 const SignUp: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [userRegistered, setUserRegistered] = useState(false);
 
