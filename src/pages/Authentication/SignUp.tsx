@@ -16,12 +16,9 @@ interface AuthUserFormData {
 }
 
 const SignUp: React.FC = () => {
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [userRegistered, setUserRegistered] = useState(false);
-  const [, setEmail] = useState<string>("");
-  const [, setNome] = useState<string>("");
-  const [planId, setPlanId] = useState<string>("");
 
   const { register, handleSubmit } = useForm<AuthUserFormData>({
     resolver: zodResolver(AuthUserFormSchema),
@@ -30,8 +27,6 @@ const SignUp: React.FC = () => {
   const onSubmit: SubmitHandler<AuthUserFormData> = async (data) => {
     setLoading(true);
     setError("");
-    setEmail(data.email);
-    setNome(data.nome);
     try {
       const response = await api.post("/newUsers", data);
       console.log("Resposta da API:", response);
@@ -39,7 +34,6 @@ const SignUp: React.FC = () => {
       if (response.data.success) {
         console.log("Usuário cadastrado com sucesso!");
         setUserRegistered(true);
-        setPlanId(response.data.subscription.plan_id);
       } else {
         setError(response.data.error || "Erro ao cadastrar usuário.");
       }
@@ -49,8 +43,6 @@ const SignUp: React.FC = () => {
       setLoading(false);
     }
   };
-
-
 
   return (
     <div className="login-page">
@@ -95,10 +87,10 @@ const SignUp: React.FC = () => {
             </div>
 
             {error && <p className="error-message">{error}</p>}
-            <Button type="submit" name={''} id={''} link={''} target={''} p={''} span={''} >Cadastrar</Button>
+            <Button type="submit" name={''} id={''} link={''} target={''} p={''} span={''}>Cadastrar</Button>
           </form>
 
-          {userRegistered && <PayPalButton clientId="ATdhPQKt5_bCp6aKm4He1TXWdZvugwh-QxH6Rd192AW40c1hEZmMWeWATNIr7Q4jw0v4ecGRPiA_tIJa" planId={planId} />}
+          {userRegistered && <PayPalButton clientId="ATdhPQKt5_bCp6aKm4He1TXWdZvugwh-QxH6Rd192AW40c1hEZmMWeWATNIr7Q4jw0v4ecGRPiA_tIJa" planId="9V2756449P2696411MZPXPGI" />}
         </div>
       </div>
     </div>

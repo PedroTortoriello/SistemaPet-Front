@@ -12,7 +12,7 @@ import CustomBrinquedos from './CustomProducts3';
 import CustomDate from './CustomDate';
 import Calendar from './Calendar';
 import api from '../Authentication/scripts/api';
-import CustomCheck from './CustomCheck';
+import CustomInput from './CustomInput';
 
 interface Encomenda {
     Dia: string;
@@ -83,6 +83,9 @@ const Encomendas: React.FC = () => {
             setShowOtherWeightInput(false);
             setSelectedWeight(peso);
         }
+    };
+    const handleValorChange = (valor: string) => {
+
     };
 
     const toggleCalendar = () => setShowCalendar(!showCalendar);
@@ -242,7 +245,8 @@ const Encomendas: React.FC = () => {
                                 {selectedType === 'Alimentação' && (
                                     <div className="w-full pr-4">
                                         <CustomAlim label="Marca de Alimentação" onChange={handleMarcaChange} />
-                                        <CustomPeso label="Peso" onChange={handlePesoChange} />
+
+                                        <CustomInput label="Valor" onChange={handleValorChange} id={''} placeholder={''} />
                                     </div>
                                 )}
 

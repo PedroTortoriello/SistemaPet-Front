@@ -26,7 +26,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   const [isAuthorized, setIsAuthorized] = useState(false);
   // Extraia loggedInEmail da localização do state
-  const loggedInEmailFromState = location.state?.loggedInEmail;
 
   // Verifique se loggedInEmail está definido
   useEffect(() => {

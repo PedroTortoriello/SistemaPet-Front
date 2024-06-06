@@ -10,13 +10,12 @@ interface Option {
 interface CustomClientesSelectProps {
   label: string;
   onChange: (value: string) => void;
-  onClientSelect: (client: Option) => void; // Adicione esta linha
+  onClientSelect: (client: Option) => void;
   options: Option[];
   id?: string;
   placeholder?: string;
   value?: string;
 }
-
 
 const CustomClientesSelect: React.FC<CustomClientesSelectProps> = ({ label, onChange, onClientSelect, options, id, placeholder, value }) => {
   const [focused, setFocused] = useState(false);
@@ -44,7 +43,7 @@ const CustomClientesSelect: React.FC<CustomClientesSelectProps> = ({ label, onCh
     onChange(selectedValue);
     const selectedOption = options.find(option => option.value === selectedValue);
     if (selectedOption) {
-      onClientSelect(selectedOption); // Chame onClientSelect com o cliente selecionado
+      onClientSelect(selectedOption);
     }
     if (selectedValue === "outros") {
       setShowInput(true);

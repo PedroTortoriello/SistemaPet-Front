@@ -272,13 +272,23 @@ const Agenda: React.FC = () => {
             <div className="flex flex-wrap">
               <div className="w-full pr-4">
                 <CustomClientesSelect
-                  label="PET"
-                  {...register('animal')}
-                  id="PET"
-                  placeholder="Digite o nome do PET"
-                  onChange={(value) => handleChange('cliente', value)}
-                  options={clientes.map(cliente => ({ value: cliente.nomePet, label: cliente.nomePet }))} // Passa as opções de clientes
-                />
+                    label="PET"
+                    {...register('animal')}
+                    id="PET"
+                    placeholder="Digite o nome do PET"
+                    onChange={(value) => handleChange('cliente', value)}
+                    onClientSelect={(client) => {
+                      // Implement your logic here
+                      console.log("Selected client:", client);
+                    }}
+                    options={clientes.map(cliente => ({
+                      value: cliente.nomePet,
+                      label: cliente.nomePet,
+                      telefone: cliente.telefone,
+                      email: cliente.email
+                    }))}
+                  />
+
               </div>
               <div className="md:flex md:space-x-4 w-full">
                 <div className="w-full pr-4">
